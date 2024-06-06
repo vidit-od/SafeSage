@@ -8,6 +8,7 @@
     "@prisma/extension-accelerate": "^1.1.0",
     "@vidit-od/common-app": "^1.0.0",
     "cloudflare": "^3.2.0",
+    "cors": "^2.8.5",
     "hono": "^4.4.2",
     "prisma": "^5.15.0"
   },
