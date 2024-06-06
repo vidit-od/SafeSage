@@ -10,11 +10,15 @@ export const UserRouter = new Hono<{
     }
 }>();
 
+// api/v1/user/signup route: To create new Users
 UserRouter.post('/signup',async(c)=>{
     try{
+        // input verification using zod 
         const body = await c.req.json()
         const {success} = signupInput.safeParse(body);
         if( !success) return c.json({msg: "Invalid Body in request"},400)
+        
+        // prisma query to check if Email already exists (Not necessary coz taken care in postgres)
         const user = await prisma.user.findFirst({
             where:{
                 email: body.email
@@ -23,6 +27,8 @@ UserRouter.post('/signup',async(c)=>{
         if( user != null) {        
             return c.json({msg: "Email already exists"},404)
         }
+
+        // prisma query to create a user
         const response = await prisma.user.create({
             data:{
                 email   : body.email,
@@ -31,6 +37,7 @@ UserRouter.post('/signup',async(c)=>{
             }
         })
 
+        // return jwt token for auth
         const token = 'Bearer ' + await sign({id : response.id}, c.env.JWT_secret);
         return c.json({token},200);
     }
@@ -39,12 +46,15 @@ UserRouter.post('/signup',async(c)=>{
     }
 })
 
+// api/v1/user/signin route: To login users
 UserRouter.post('/signin',async(c)=>{
     try{
+        // input verification using zod
         const body= await c.req.json(); 
         const {success} = signinInput.safeParse(body);
         if( !success) return c.json({msg: "Invalid Body in request"},400)
             
+        // prisma query to find user
         const response = await prisma.user.findFirst({
             where:{
                 email: body.email,
@@ -52,8 +62,8 @@ UserRouter.post('/signin',async(c)=>{
             }
         })
 
+        // Return Jwt token
         const token = 'Bearer '+ await sign({id: response?.id}, c.env.JWT_secret);
-
         return c.json({token})
     }
     catch(e){

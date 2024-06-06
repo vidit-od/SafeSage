@@ -13,6 +13,7 @@ export const BlogRouter = new Hono<{
     }
 }>();
 
+// middleware to verify Jwt token in header and set userid parameter for future queries 
 BlogRouter.use(async (c, next) => {
 	const jwt = c.req.header('Authorization');
 	if (!jwt) {
@@ -31,12 +32,16 @@ BlogRouter.use(async (c, next) => {
 	await next()
 })
 
+// api/v1/blog route		: To create new Posts 
 BlogRouter.post('/',async(c)=>{
 	try	{
+		// get data , input verification using zod
 		const authorId = c.get('userId');
 		const body = await c.req.json();
 		const {success} = createPost.safeParse(body);
 		if(!success) return c.json({msg: 'invalid body'},400);
+		
+		// prisma query to create a post 
 		const post = await prisma.post.create({
 			data:{
 				title: body.title,
@@ -53,13 +58,16 @@ BlogRouter.post('/',async(c)=>{
 
 })
 
+// api/v1/blog route		: To update existing users 
 BlogRouter.put('/',async(c)=>{
 	try{
+		// get data , input verification using zod 
 		const authorId = c.get('userId');
 		const body = await c.req.json();
 		const {success} = updatePost.safeParse(body);
 		if(!success) return c.json({msg: "Invalid body"},400);
-
+		
+		// prisma query to update post
 		const response = await prisma.post.update({
 			where:{
 				id: body.id,
@@ -78,6 +86,8 @@ BlogRouter.put('/',async(c)=>{
 	}
 })
 
+// api/v1/blog/id route		: To get specific post
+// api/v1/blog/bulk route	: To get all posts
 BlogRouter.get('/:id',async(c)=>{
 	const postid = c.req.param('id');
 	if( postid == 'Bulk' || postid == 'bulk'){
