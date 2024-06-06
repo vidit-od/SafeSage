@@ -6,6 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily:{
+        "space": "Space Grotesk"
+      },
+      fontSize:{
+        "3xl": "30px",
+        "8xl":"80px"
+      },
       backgroundColor:{
         'semi-black': 'rgba(0,0,0,0.5)',
       },
