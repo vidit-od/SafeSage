@@ -1,3 +1,5 @@
+import { transform } from 'typescript';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -20,7 +22,17 @@ export default {
       },
       width:{
         "96": "400px"
+      },
+      animation:{
+        "rotate": "circle 1s linear infinite"
+      },
+      keyframes : {
+        circle: {
+          "0%": { transform: "rotate(0deg)"},
+          "100%": { transform: "rotate(360deg)" },
+        }
       }
+      
     },
   },
   plugins: [],

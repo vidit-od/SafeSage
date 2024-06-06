@@ -1,11 +1,54 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import img from '../assets/2.jpg' 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import axios from "axios";
 export function Signin(){
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [passwordState, setPasswordState]= useState(true)
     const color = 'white'; 
+    const navigate = useNavigate();
+    const loader = useRef<HTMLDivElement>(null);
+
+    const loginuser = async()=>{
+        try{
+            if(loader.current == null) return ;
+            loader.current.style.opacity = '1';
+            const response = await axios.post('https://backend.vidit894.workers.dev/api/v1/user/signin',{
+                email,
+                password
+            })
+
+            
+            console.log(response);
+            loader.current.style.border = "none";
+            loader.current.style.animation = "none";
+            loader.current.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-7 fill-green-500">
+            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+            </svg>`
+            await new Promise(r=>setTimeout(r,2000));
+            navigate('/blog');
+        }
+        catch(e){
+            console.log(e);
+            if(loader.current) {
+                loader.current.style.border = 'none'
+                loader.current.style.animation = "none"
+                loader.current.innerHTML = 
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red" class="size-7 fill-red">
+                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" />
+                </svg>`
+                setTimeout(()=>{
+                    if(loader.current == null) return 
+                    loader.current.style.opacity = "0"
+                    loader.current.style.border = '4px solid rgb(107 114 128)'
+                    loader.current.style.borderLeft = '4px solid rgb(34 197 94)'
+                    loader.current.style.animation = "circle 1s linear infinite"
+                    loader.current.innerHTML = ``
+                },1000)
+            }
+        }
+    }
     return (
         <div className="flex w-full h-full absolute overflow-hidden justify-center items-center p-5 bg-slate-200">
             <div className=" bg-white h-fit p-5 w-full transition-width duration-200 text-center min-w-fit max-w-fit rounded-xl shadow-xl overflow-hidden flex justify-center items-center
@@ -55,8 +98,10 @@ export function Signin(){
                     </div>
                 </div>
 
-                <button className="w-60 bg-black p-2 rounded-md m-auto mt-4 text-white">
-                    Login
+                <button className="w-60 bg-black p-2 rounded-md m-auto mt-4 text-white relative flex justify-center items-center" onClick={loginuser}>
+                    <div className="flex justify-center items-center"> Login </div>
+                    <div className="absolute w-7 h-7 rounded-full ml-4 border-4 border-gray-500 border-l-green-500 animate-rotate opacity-0 right-12 pointer-events-none opacity-1" ref={loader}>
+                    </div>
                 </button>
                 <div className="">
                     Don't have account ? <Link to="/signup" className=" underline font-semibold"> Signup</Link>
@@ -69,9 +114,9 @@ export function Signin(){
                 <div className="absolute top-0 left-0 mt-5 ml-5 z-10 flex justify-center items-center">
                     <div className="w-7 h-7">
                         <svg viewBox="0 0 282 282" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="141" cy="141" r="131.5" stroke={color} stroke-width="19"/>
+                    <circle cx="141" cy="141" r="131.5" stroke={color} strokeWidth="19"/>
                     <path d="M132.271 132.271L123.543 141H106.503C106.769 122.067 122.067 106.769 141 106.503V123.543L132.271 132.271ZM106.503 142H123.543L132.271 150.729L141 159.457V176.496C122.067 176.231 106.769 160.933 106.503 142ZM142 123.543V106.503C160.933 106.769 176.231 122.067 176.496 141H159.457L150.729 132.271L142 123.543ZM159.457 142H176.496C176.231 160.933 160.933 176.231 142 176.496V159.457L150.729 150.729L159.457 142ZM142 133.125H149.168L142 140.293V133.125ZM141 133.125V140.293L133.832 133.125H141ZM133.125 149.168V142H140.293L133.125 149.168ZM133.832 149.875L141 142.707V149.875H133.832ZM149.168 149.875H142V142.707L149.168 149.875ZM149.875 149.168L142.707 142H149.875V149.168ZM149.875 133.832V141H142.707L149.875 133.832ZM133.125 133.832L140.293 141H133.125V133.832Z" fill={color} stroke={color}/>
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M172.656 97.4286L141 0L109.344 97.4286H6.90103L89.7787 157.643L58.1223 255.071L141 194.857L223.878 255.071L192.221 157.643L275.099 97.4286H172.656ZM172.656 97.4286H109.344L89.7787 157.643L141 194.857L192.221 157.643L172.656 97.4286Z" fill={color}/>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M172.656 97.4286L141 0L109.344 97.4286H6.90103L89.7787 157.643L58.1223 255.071L141 194.857L223.878 255.071L192.221 157.643L275.099 97.4286H172.656ZM172.656 97.4286H109.344L89.7787 157.643L141 194.857L192.221 157.643L172.656 97.4286Z" fill={color}/>
                         </svg>
                     </div>
                     <div className="text-white ml-2 text-2xl font-lobster">
