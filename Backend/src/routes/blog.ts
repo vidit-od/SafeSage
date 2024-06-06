@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
-import { JWTPayload } from "hono/utils/jwt/types";
 import prisma from "../prisma";
 import { createPost, updatePost } from "@vidit-od/common-app";
 
@@ -81,15 +80,19 @@ BlogRouter.put('/',async(c)=>{
 
 BlogRouter.get('/:id',async(c)=>{
 	const postid = c.req.param('id');
+	if( postid == 'Bulk' || postid == 'bulk'){
+		const posts = await prisma.post.findMany()
+		return c.json({posts});
+	}
 	const userId = c.get('userId');
-	return c.json(await prisma.post.findUnique({
+	const unique = await prisma.post.findUnique({
 		where:{
 			id: postid,
 			authorID: userId,
 		}
-	}))
+	})
+
+	if( !unique)return c.json({msg: 'Invalid Postid'},400);
+	return c.json(unique)
 })
 
-BlogRouter.get('/bulk',async(c)=>{
-
-})
