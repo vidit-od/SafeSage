@@ -6,7 +6,6 @@ export function Signin(){
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [passwordState, setPasswordState]= useState(true)
-    const color = 'white'; 
     const navigate = useNavigate();
     const loader = useRef<HTMLDivElement>(null);
 
@@ -51,6 +50,15 @@ export function Signin(){
     }
     return (
         <div className="flex w-full h-full absolute overflow-hidden justify-center items-center p-5 bg-slate-200">
+            <div className="absolute top-0 left-0 w-full h-fit overflow-hidden transition-all duration-200 shadow-md bg-white py-1 md:opacity-0 md:pointer-events-none text-black">
+                
+            <div className="flex justify-center ml-3">
+                        <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
+                        <div className=" ml-1 text-xl font-bold font-space flex items-center">
+                            SafeSage
+                        </div>
+                </div>
+            </div>
             <div className=" bg-white h-fit p-5 w-full transition-width duration-200 text-center min-w-fit max-w-fit rounded-xl shadow-xl overflow-hidden flex justify-center items-center
             md:w-1/2 md:rounded-l-xl md:rounded-r-none md:h-full">
                 <div className="">
@@ -111,23 +119,18 @@ export function Signin(){
             <div className="relative pointer-events-none w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
             md:w-fit">
                 <img src={img} alt="img" className=" w-full h-full object-left object-cover"/>
-                <div className="absolute top-0 left-0 mt-5 ml-5 z-10 flex justify-center items-center">
-                    <div className="w-7 h-7">
-                        <svg viewBox="0 0 282 282" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="141" cy="141" r="131.5" stroke={color} strokeWidth="19"/>
-                    <path d="M132.271 132.271L123.543 141H106.503C106.769 122.067 122.067 106.769 141 106.503V123.543L132.271 132.271ZM106.503 142H123.543L132.271 150.729L141 159.457V176.496C122.067 176.231 106.769 160.933 106.503 142ZM142 123.543V106.503C160.933 106.769 176.231 122.067 176.496 141H159.457L150.729 132.271L142 123.543ZM159.457 142H176.496C176.231 160.933 160.933 176.231 142 176.496V159.457L150.729 150.729L159.457 142ZM142 133.125H149.168L142 140.293V133.125ZM141 133.125V140.293L133.832 133.125H141ZM133.125 149.168V142H140.293L133.125 149.168ZM133.832 149.875L141 142.707V149.875H133.832ZM149.168 149.875H142V142.707L149.168 149.875ZM149.875 149.168L142.707 142H149.875V149.168ZM149.875 133.832V141H142.707L149.875 133.832ZM133.125 133.832L140.293 141H133.125V133.832Z" fill={color} stroke={color}/>
-                    <path fillRule="evenodd" clipRule="evenodd" d="M172.656 97.4286L141 0L109.344 97.4286H6.90103L89.7787 157.643L58.1223 255.071L141 194.857L223.878 255.071L192.221 157.643L275.099 97.4286H172.656ZM172.656 97.4286H109.344L89.7787 157.643L141 194.857L192.221 157.643L172.656 97.4286Z" fill={color}/>
-                        </svg>
-                    </div>
-                    <div className="text-white ml-2 text-2xl font-lobster">
-                        SafeSage
-                    </div>
+                
+                <div className="absolute top-2 text-white z-10 flex justify-center ml-3">
+                        <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
+                        <div className="text-white ml-1 text-xl font-bold font-space flex items-center">
+                            SafeSage
+                        </div>
                 </div>
                 <div className="absolute w-full h-full top-0 bg-semi-black text-white flex flex-col justify-end p-5 items-end">
                     <div className="w-full font-space text-8xl translate-y-16 -translate-x-2">"</div>
                     <div className=" font-extrabold text-3xl leading-8 pl-2">In learning you will teach, and in teaching you will learn.
                     </div>
-                    <div className="w-full font-extralight opacity-70 text-right font-lobster">
+                    <div className="w-full font-extralight opacity-70 text-right">
                         ― Phil Collins
                     </div>
                 </div>

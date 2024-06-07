@@ -19,9 +19,10 @@ export default {
       backgroundColor:{
         'semi-black': 'rgba(0,0,0,0.5)',
         'semi-white': 'rgba(255,255,255,0.5)',
+        'gray-100':'#f1f1f1'
       },
       width:{
-        "96": "400px"
+        "96": "400px",
       },
       animation:{
         "rotate": "circle 1s linear infinite"
@@ -31,7 +32,7 @@ export default {
           "0%": { transform: "rotate(0deg)"},
           "100%": { transform: "rotate(360deg)" },
         }
-      }
+      },
       
     },
   },
