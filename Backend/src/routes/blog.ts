@@ -22,7 +22,7 @@ BlogRouter.use(async (c, next) => {
 	}
 	const token = jwt.split(' ')[1];
 	const payload = await verify(token, c.env.JWT_secret);
-	if( typeof(payload.id) != 'string') return c.json({msg: 'error'});
+	if( typeof(payload.id) != 'string') return c.json({msg: 'error'},400);
 	const id:string = payload.id;
 	if (!payload ) {
 		c.status(401);

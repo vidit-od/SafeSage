@@ -17,9 +17,7 @@ export function Signin(){
                 email,
                 password
             })
-
-            
-            console.log(response);
+            localStorage.setItem('token',response.data.token)
             loader.current.style.border = "none";
             loader.current.style.animation = "none";
             loader.current.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-7 fill-green-500">

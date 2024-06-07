@@ -55,13 +55,13 @@ UserRouter.post('/signin',async(c)=>{
         if( !success) return c.json({msg: "Invalid Body in request"},400)
             
         // prisma query to find user
-        const response = await prisma.user.findFirst({
+        const response = await prisma.user.findUnique({
             where:{
                 email: body.email,
                 password: body.password
             }
         })
-
+        if(response == null) throw new Error();
         // Return Jwt token
         const token = 'Bearer '+ await sign({id: response?.id}, c.env.JWT_secret);
         return c.json({token})
