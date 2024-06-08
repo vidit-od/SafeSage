@@ -10,6 +10,7 @@ export function Signup(){
     const [passwordState, setPasswordState]= useState(true)
     const navigate = useNavigate();
     const loader = useRef<HTMLDivElement>(null);
+
     const createUser = async()=>{
         try{
             if(loader.current == null) return
@@ -50,16 +51,8 @@ export function Signup(){
     }
     return (
         <div className="flex w-full h-full absolute overflow-hidden justify-center items-center p-5 bg-slate-200">
-            <div className="absolute top-0 left-0 w-full h-fit overflow-hidden transition-all duration-200 shadow-md bg-white py-1 md:opacity-0 md:pointer-events-none text-black">
-                
-                <div className="flex justify-center ml-3">
-                            <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
-                            <div className=" ml-1 text-xl font-bold font-space flex items-center">
-                                SafeSage
-                            </div>
-                    </div>
-                </div>
 
+            {/* left inputs  */}
             <div className=" bg-white h-fit p-5 w-full transition-width duration-200 text-center min-w-fit max-w-fit rounded-xl shadow-xl overflow-hidden flex justify-center items-center
             md:w-1/2 md:rounded-l-xl md:rounded-r-none md:h-full">
                 <div className="">
@@ -127,6 +120,8 @@ export function Signup(){
                 </div>
                 </div>
             </div>
+
+            {/* Right image */}
             <div className="relative pointer-events-none w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
             md:w-fit">
                 <img src={img} alt="img" className=" w-full h-full object-left object-cover"/>

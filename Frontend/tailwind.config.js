@@ -14,12 +14,15 @@ export default {
       },
       fontSize:{
         "3xl": "30px",
-        "8xl":"80px"
+        "8xl":"80px",
+        "10xl":"70px"
       },
       backgroundColor:{
         'semi-black': 'rgba(0,0,0,0.5)',
         'semi-white': 'rgba(255,255,255,0.5)',
-        'gray-100':'#f1f1f1'
+        'gray-100':'#f1f1f1',
+        'blue-custom1':'#719FAE',
+        'orange-100':'#fff5Ef'
       },
       width:{
         "96": "400px",
@@ -32,7 +35,6 @@ export default {
         "rotate": "circle 1s linear infinite",
         "logo": "loader 5s linear infinite",
         "loadbar": "bar 5s linear infinite",
-        "maxscale": "maxs 5s linear"
       },
       keyframes : {
         circle: {
@@ -50,10 +52,6 @@ export default {
           '25%': {width:'50%'},
           '50%': {width:'30%', left: '70%'},
           '75%': {width:'50%'},
-        },
-        maxs:{
-          '0%':  {scale:"1"},
-          '100%':{scale:"100000"},
         }
       },
       
