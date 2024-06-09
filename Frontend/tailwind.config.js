@@ -26,15 +26,20 @@ export default {
       },
       width:{
         "96": "400px",
-        "block": "15px"
+        "block": "15px",
+        "1":"2px"
+      },
+      rotate:{
+        "30":"20deg"
       },
       translate:{
         "30": "118.5px"
       },
       animation:{
-        "rotate": "circle 1s linear infinite",
-        "logo": "loader 5s linear infinite",
-        "loadbar": "bar 5s linear infinite",
+        "rotate"        : "circle 1s  linear infinite",
+        "logo"          : "loader 5s  linear infinite",
+        "loadbar"       : "bar    5s  linear infinite",
+        'catagories'    : "shifts 50s linear infinite",
       },
       keyframes : {
         circle: {
@@ -52,6 +57,10 @@ export default {
           '25%': {width:'50%'},
           '50%': {width:'30%', left: '70%'},
           '75%': {width:'50%'},
+        },
+        shifts:{
+          "0%": { transform: "translateX(0%)"},
+          "100%": { transform: "translateX(-50%)" },
         }
       },
       

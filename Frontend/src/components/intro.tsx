@@ -1,6 +1,6 @@
 export function Intro(){
     return(
-        <div className="md:w-3/5 py-20 md:py-9">
+        <div className="md:w-3/5 py-20 md:py-9  pr-10">
                     <div className="text-10xl font-semibold font-space leading-none">
                         <div className=" opacity-0 pointer-events-none absolute md:opacity-100 md:relative ">
                             Thoughts & <br />
