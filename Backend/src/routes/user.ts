@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import prisma from "../prisma";
 import { sign,decode,verify } from "hono/jwt"; 
 import {signinInput, signupInput} from "@vidit-od/common-app" 
+import { use } from "hono/jsx";
 
 export const UserRouter = new Hono<{
     Bindings:{
@@ -68,5 +69,29 @@ UserRouter.post('/signin',async(c)=>{
     }
     catch(e){
         return c.json({msg: "Something Went Wrong",error: e},400)
+    }
+})
+
+// api/v1/user route: For user authentication and jwt login
+UserRouter.get('/',async(c)=>{
+    try{
+        const auth = c.req.header('Authorization');
+        if(auth == undefined) throw new Error()
+        const token = auth.split(' ')[1];
+        
+        const payload = await verify(token,c.env.JWT_secret);
+        if(typeof payload.id != 'string') throw new Error();
+        const userid = payload.id;
+
+        const user = await prisma.user.findUnique({
+            where:{
+                id: userid
+            }
+        })
+        if(user == null) throw new Error();
+        return c.json({id: user.id, email: user.email, username: user.name});
+    }
+    catch(e){
+        return c.json({msg: 'un-authorized',error:e});
     }
 })

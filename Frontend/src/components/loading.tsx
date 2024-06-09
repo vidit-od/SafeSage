@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react"
 
-export function LoadingComponent(state:boolean){
+export function LoadingComponent(){
     const logo = useRef<HTMLDivElement>(null);
     const progress = useRef<HTMLDivElement>(null);
     const animateLogo= async()=>{
-        if(state) return
         await setInterval(async()=>{
             if(! logo.current) return
             logo.current.innerHTML = "( )" 
@@ -15,23 +14,11 @@ export function LoadingComponent(state:boolean){
             await new Promise(r=>setTimeout(r,100))
             logo.current.innerHTML = "(:)"
             
-        },5000);
-    }
-    const successAnimation = async()=>{
-        if(!progress.current) return
-        if(!logo.current) return
-        progress.current.style.animation = "none"
-        progress.current.style.left = "0%"
-        progress.current.style.width = "100%"    
+        },2500);
     }
     useEffect(()=>{
-        if(!state){
             animateLogo()
-        }
-        else{
-            successAnimation();
-        }
-    },[state])
+    },[])
     return (
         <div className=" absolute w-full h-full bg-black overflow-hidden text-white flex justify-center items-center font-bold text-9xl font-space flex-col">
             {/* Logo */}
