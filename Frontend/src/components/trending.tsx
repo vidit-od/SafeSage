@@ -26,17 +26,18 @@ export function Trending(){
                 Authorization: localStorage.getItem('token')
             }
         })
+        console.log(blog);
         setBlogs([...blogs, {
             img: img1 ,
             title:blog.data.posts[0].title,
-            date:'09 June 2024',
-            author:'author',
+            date:blog.data.posts[0].date,
+            author:blog.data.posts[0].author,
             tags:["tag", "tagg", "tagged"],
             readtime:'5'
         }, {
             img: img2 ,
             title:blog.data.posts[1].title,
-            date:'09 June 2024',
+            date:blog.data.posts[0].date,
             author:'author',
             tags:["tag", "tagg", "tagged"],
             readtime:'5'
@@ -74,14 +75,14 @@ const BlogCard:React.FC<BlogCardComponent> = (content)=>{
                     <img src={content.content.img} alt="" className="w-full md:h-44"/>
                     <BlogButton/>
                 </div>
-                <div className="px-3 flex flex-col justify-between">
+                <div className="flex flex-col justify-between">
                     <div className=" flex flex-col md:flex-row">
                         <div className="md:w-3/5 w-full font-bold md:text-xl line-clamp-2 object-cover">
                             {content.content.title} 
                         </div>
                         <div className="md:w-2/5 w-full flex md:flex-col text-right">
-                            <div className="mr-2">{content.content.date.split(' ')[0]}</div>
-                            <div className="">{content.content.date.split(' ')[1] + ' ' + content.content.date.split(' ')[2]}</div>
+                            <div className="mr-2">{content.content.date.split('T')[0].split('-')[2]}</div>
+                            <div className="">{Dates[parseInt(content.content.date.split('T')[0].split('-')[1])] + "-"+ content.content.date.split('T')[0].split('-')[0]}</div>
                         </div>
                     </div>
                     <div className="md:justify-start flex border-t-2 justify-between flex-wrap">
@@ -94,3 +95,17 @@ const BlogCard:React.FC<BlogCardComponent> = (content)=>{
         </div>
     )
 }
+enum Dates {
+    January = 1,
+    February,
+    March,
+    April,
+    May,
+    June,
+    July,
+    August,
+    September,
+    October,
+    November,
+    December
+  }
