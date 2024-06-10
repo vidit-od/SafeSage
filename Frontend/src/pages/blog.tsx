@@ -2,15 +2,16 @@ import { MainNavbar } from "../components/navbar"
 import { Intro } from "../components/intro"
 import { Trending } from "../components/trending"
 import { BlogCatagories } from "../components/blogcatagories"
-import { useEffect, useState } from "react"
+import { useState,useEffect } from "react"
 import { LoadingComponent } from "../components/loading"
 import axios from "axios"
 import {  useRecoilState } from "recoil"
 import { useratom } from "../store/atom/useratom"
+
 export function Blog(){
     const userState = useRecoilState(useratom);
     const [loading , setLoading] = useState((userState[0].id == null)?true:false);
-
+    
     useEffect(() => {
         const token = localStorage.getItem('token');
         if( !token || !token.startsWith('Bearer ')){

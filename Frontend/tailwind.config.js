@@ -22,7 +22,9 @@ export default {
         'semi-white': 'rgba(255,255,255,0.5)',
         'gray-100':'#f1f1f1',
         'blue-custom1':'#719FAE',
-        'orange-100':'#fff5Ef'
+        'orange-100':'#fff5Ef',
+        'skeleton': '#f1f1f1',
+        'grad': 'linear-gradient(to right, transparent, #d7d7d7, transparent)'
       },
       width:{
         "96": "400px",
@@ -41,6 +43,7 @@ export default {
         "loadbar"       : "bar    5s  linear infinite",
         'catagories'    : "shifts 50s linear infinite",
         'bounce'        : "leftbounce 2s linear infinite",
+        'skeleton'      : 'skeletons 1s linear infinite',
       },
       keyframes : {
         circle: {
@@ -69,6 +72,9 @@ export default {
           '10%': { transform: " translateX(0px) translateY(2px)"},
           '15%': { transform: " translateX(5px) translateY(2px)"},
           '20%': { transform: " translateX(0px) translateY(2px)"},
+        },
+        skeletons:{
+          '100%': {transform: 'translateX(100%)'}
         }
       },
       
