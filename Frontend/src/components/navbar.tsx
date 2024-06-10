@@ -1,6 +1,5 @@
 import { useRecoilValue } from "recoil"
 import { useratom } from "../store/atom/useratom"
-import { User } from "../store/atom/types"
 import { useNavigate } from "react-router-dom"
 
 export function MainNavbar(){
@@ -53,14 +52,15 @@ const GuestLinks = ()=>{
 
 const LoggedLinks: React.FC = ()=>{
     const USER = useRecoilValue(useratom);
+    const navigate = useNavigate();
     if( !USER || !USER.name) {
         return <GuestLinks/>
     }
     return(
     <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
-        <button className=" font-bold mx-4 transition-all duration-75 hover:border-b-2 border-black">Home</button>
+        <button className="font-bold mx-4 transition-all duration-75 hover:border-b-2 border-black">Home</button>
         <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black">Our Stories</button>
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black">Start Writing</button>
+        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" onClick={()=>navigate('/blog/write')}>Start Writing</button>
         <button className="w-9 h-9 flex justify-center items-center border-2 border-black bg-black text-white border-solid rounded-full">{USER.name[0].toString().toUpperCase()}</button>
     </div>
     )

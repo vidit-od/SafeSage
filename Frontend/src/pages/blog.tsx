@@ -9,7 +9,7 @@ import {  useRecoilState } from "recoil"
 import { useratom } from "../store/atom/useratom"
 export function Blog(){
     const userState = useRecoilState(useratom);
-    const [loading , setLoading] = useState(true);
+    const [loading , setLoading] = useState((userState[0].id == null)?true:false);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
