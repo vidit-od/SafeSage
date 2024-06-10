@@ -88,10 +88,46 @@ BlogRouter.put('/',async(c)=>{
 
 // api/v1/blog/id route		: To get specific post
 // api/v1/blog/bulk route	: To get all posts
-BlogRouter.get('/:id',async(c)=>{
+BlogRouter.post('/:id',async(c)=>{
 	const postid = c.req.param('id');
 	if( postid == 'Bulk' || postid == 'bulk'){
-		const posts = await prisma.post.findMany()
+		const response = await c.req.json()
+		console.log(response);
+		if( !response || !response.limit) {
+			const posts = await prisma.post.findMany({
+				select:{
+					id : true,
+					title: true,
+					content: true,
+					date: true,
+					author:{
+						select:{
+							id: true,
+							name: true,
+							email: true
+						}
+					}
+				}
+			})
+			return c.json({posts});
+		}
+		const posts = await prisma.post.findMany({
+			skip: 2,
+			take: response.limit,
+			select:{
+				id : true,
+				title: true,
+				content: true,
+				date:true,
+				author:{
+					select:{
+						id: true,
+						name: true,
+						email: true
+					}
+				}
+			}
+		})
 		return c.json({posts});
 	}
 	const userId = c.get('userId');

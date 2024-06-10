@@ -21,7 +21,9 @@ export function Trending(){
     },[])
                 
     const loadblogs = async()=>{
-        const blog = await axios.get('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
+        const blog = await axios.post('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
+            limit:2
+        },{
             headers:{
                 Authorization: localStorage.getItem('token')
             }
@@ -31,14 +33,14 @@ export function Trending(){
             img: img1 ,
             title:blog.data.posts[0].title,
             date:blog.data.posts[0].date,
-            author:blog.data.posts[0].author,
+            author:blog.data.posts[0].author.name,
             tags:["tag", "tagg", "tagged"],
             readtime:'5'
         }, {
             img: img2 ,
             title:blog.data.posts[1].title,
-            date:blog.data.posts[0].date,
-            author:'author',
+            date:blog.data.posts[1].date,
+            author:blog.data.posts[1].author.name,
             tags:["tag", "tagg", "tagged"],
             readtime:'5'
         },])
