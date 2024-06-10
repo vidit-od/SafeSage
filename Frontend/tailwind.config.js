@@ -40,6 +40,7 @@ export default {
         "logo"          : "loader 5s  linear infinite",
         "loadbar"       : "bar    5s  linear infinite",
         'catagories'    : "shifts 50s linear infinite",
+        'bounce'        : "leftbounce 2s linear infinite",
       },
       keyframes : {
         circle: {
@@ -61,6 +62,13 @@ export default {
         shifts:{
           "0%": { transform: "translateX(0%)"},
           "100%": { transform: "translateX(-50%)" },
+        },
+        leftbounce:{
+          '0%': { transform: " translateX(0px) translateY(2px)"},
+          '5%': { transform: " translateX(5px) translateY(2px)"},
+          '10%': { transform: " translateX(0px) translateY(2px)"},
+          '15%': { transform: " translateX(5px) translateY(2px)"},
+          '20%': { transform: " translateX(0px) translateY(2px)"},
         }
       },
       

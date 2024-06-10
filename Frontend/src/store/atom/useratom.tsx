@@ -1,6 +1,6 @@
 import { atom } from "recoil";
-
-export const useratom = atom({
+import { User } from "./types";
+export const useratom = atom<User>({
     key : 'useratom',
     default: {
         id: null,

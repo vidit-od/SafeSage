@@ -9,9 +9,20 @@ import {  useRecoilState } from "recoil"
 import { useratom } from "../store/atom/useratom"
 export function Blog(){
     const userState = useRecoilState(useratom);
-    const [loading , setLoading] = useState((userState[0].id == null)?false:true);
+    const [loading , setLoading] = useState(true);
+
     useEffect(() => {
-        if(userState[0].id == null) {
+        const token = localStorage.getItem('token');
+        if( !token || !token.startsWith('Bearer ')){
+            userState[1]({
+                id: null,
+                name: null,
+                email: null,
+            })
+            console.log(1);
+            setLoading(false); 
+        }
+        else if (userState[0].id == null) {
             loaduser();
         }
     }, []);
@@ -27,7 +38,6 @@ export function Blog(){
             name: user.data.username,
             email: user.data.email,
         })
-        
         setLoading(false);
     }
     if(loading){
