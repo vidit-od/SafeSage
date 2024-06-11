@@ -25,3 +25,13 @@ TagRouter.post('/add/bulk',async(c)=>{
         return c.json({msg: "error",error:e});
     }
 })
+
+TagRouter.get('/get/bulk', async(c)=>{
+    try{
+        const response = await prisma.tags.findMany();
+        return c.json(response);
+    }
+    catch(e){
+        return c.json({msg: "something went wrong",error:e})
+    }
+})

@@ -28,7 +28,6 @@ export function Trending(){
                 Authorization: localStorage.getItem('token')
             }
         })
-        console.log(blog);
         setBlogs([...blogs, {
             img: img1 ,
             title:blog.data.posts[0].title,
