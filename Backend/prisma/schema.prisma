@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User{
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   email         String  @unique
   name          String?
   password      String
@@ -23,10 +23,30 @@ model User{
 }
 
  model Post{
-    id          String  @id @default(uuid())
+    id          String       @id @default(uuid())
     title       String
     content     String
-    date        DateTime @db.Date @default(now())
+    date        DateTime     @db.Date @default(now())
     authorID    String
-    author      User    @relation(fields: [authorID] , references: [id])
+    author      User         @relation(fields: [authorID] , references: [id])
+    tags        PosttoTag[]
  }
+
+model Tags{
+  id          String      @id @default(uuid())
+  name        String      @unique
+  posts       PosttoTag[]
+}
+
+model PosttoTag{
+  id          Int       @id @default(autoincrement())
+  postID      String
+  tagID       String
+
+  post        Post      @relation(fields: [postID], references: [id])
+  tag         Tags      @relation(fields: [tagID],references: [id])
+
+  @@unique([postID,tagID])
+  @@index(fields: [postID], name:"postindx")
+  @@index(fields: [tagID],  name:"tagindx")
+}
