@@ -1,17 +1,20 @@
 import { useRecoilValue } from "recoil"
 import { useratom } from "../store/atom/useratom"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useEffect, useRef } from "react"
 
 export function MainNavbar(){
+    const location = useLocation();
+    
     return(
-        <div className="w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
+        <div className="snap-start w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
             <Logo/>
-            <NavLinks/>
+            <NavLinks loc = {location.pathname}/>
         </div>
     )
 }
 
-const Logo = ()=>{
+export const Logo = ()=>{
     return (
         <div className="flex justify-center">
             <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
@@ -22,11 +25,11 @@ const Logo = ()=>{
     )
 }
 
-const NavLinks = ()=>{
+const NavLinks:React.FC<{loc: string}> = ({loc})=>{
     const USER = useRecoilValue(useratom);
     return(
         <>
-            {(USER.id == null)?<GuestLinks/>:<LoggedLinks/>}        
+            {(USER.id == null)?<GuestLinks/>:<LoggedLinks loc={loc}/>}        
         </>
     )
 }
@@ -50,17 +53,29 @@ const GuestLinks = ()=>{
     )
 }
 
-const LoggedLinks: React.FC = ()=>{
+const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
     const USER = useRecoilValue(useratom);
     const navigate = useNavigate();
+
+    const home = useRef<HTMLButtonElement>(null);
+    const stories = useRef<HTMLButtonElement>(null);
+    const writing = useRef<HTMLButtonElement>(null);
+
+    useEffect(()=>{
+        if( !home || !home.current || !stories || !stories.current) return
+        else if (loc.loc == '/blog') home.current.style.fontWeight = "700"; 
+        else if(loc.loc == '/stories') stories.current.style.fontWeight= "700";
+    },[loc])
+    
+
     if( !USER || !USER.name) {
         return <GuestLinks/>
     }
     return(
     <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
-        <button className="font-bold mx-4 transition-all duration-75 hover:border-b-2 border-black">Home</button>
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black">Our Stories</button>
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" onClick={()=>navigate('/blog/write')}>Start Writing</button>
+        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={home} onClick={()=>navigate('/blog')}>Home</button>
+        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
+        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>
         <button className="w-9 h-9 flex justify-center items-center border-2 border-black bg-black text-white border-solid rounded-full">{USER.name[0].toString().toUpperCase()}</button>
     </div>
     )
