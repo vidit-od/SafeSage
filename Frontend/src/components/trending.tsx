@@ -96,7 +96,7 @@ const BlogCard:React.FC<BlogCardComponent> = (content)=>{
         </div>
     )
 }
-enum Dates {
+export enum Dates {
     January = 1,
     February,
     March,

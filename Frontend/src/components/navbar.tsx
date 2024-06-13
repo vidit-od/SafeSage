@@ -7,7 +7,7 @@ export function MainNavbar(){
     const location = useLocation();
     
     return(
-        <div className="snap-start w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
+        <div className=" z-100 bg-white snap-start w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
             <Logo/>
             <NavLinks loc = {location.pathname}/>
         </div>

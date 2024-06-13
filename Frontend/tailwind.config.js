@@ -31,6 +31,9 @@ export default {
         "block": "15px",
         "1":"2px"
       },
+      height:{
+        "50vh": "50vh",
+      },
       rotate:{
         "30":"20deg"
       },
