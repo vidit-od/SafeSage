@@ -92,7 +92,6 @@ BlogRouter.post('/:id',async(c)=>{
 	const postid = c.req.param('id');
 	if( postid == 'Bulk' || postid == 'bulk'){
 		const response = await c.req.json()
-		console.log(response);
 		if( !response || !response.limit) {
 			const posts = await prisma.post.findMany({
 				select:{
@@ -111,8 +110,10 @@ BlogRouter.post('/:id',async(c)=>{
 			})
 			return c.json({posts});
 		}
+		const total_posts = await prisma.post.count();
+		if(response.skip > total_posts) return c.json({posts: null})
 		const posts = await prisma.post.findMany({
-			skip: 2,
+			skip: response.skip,
 			take: response.limit,
 			select:{
 				id : true,

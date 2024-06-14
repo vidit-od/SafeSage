@@ -3,6 +3,7 @@ import img1 from '../assets/3.jpg'
 import img2 from '../assets/4.jpg'
 import { Dates } from "../components/trending"
 import React, { useEffect, useRef, useState } from "react"
+import axios from "axios"
 
 
 interface cardcontent{
@@ -11,72 +12,13 @@ interface cardcontent{
     author: string,
     tags: string[],
 }
-const tempcontent: cardcontent[] = [
-    {
-        title: "Exploring the Cosmos",
-        date: "2024-06-01",
-        author: "Jane Doe",
-        tags: ["Astronomy", "Science", "Space"]
-    },
-    {
-        title: "Advancements in AI Technology",
-        date: "2024-05-15",
-        author: "John Smith",
-        tags: ["Technology", "AI", "Innovation"]
-    },
-    {
-        title: "The Future of Renewable Energy",
-        date: "2024-04-10",
-        author: "Alice Johnson",
-        tags: ["Environment", "Energy", "Sustainability"]
-    },
-    {
-        title: "A Journey Through the World of Quantum Computing",
-        date: "2024-03-22",
-        author: "Bob Brown",
-        tags: ["Quantum Computing", "Technology", "Science"]
-    },
-    {
-        title: "The Impact of Social Media on Society",
-        date: "2024-02-18",
-        author: "Emily White",
-        tags: ["Social Media", "Society", "Communication"]
-    },
-    {
-        title: "Understanding the Basics of Blockchain",
-        date: "2024-01-30",
-        author: "Michael Green",
-        tags: ["Blockchain", "Cryptocurrency", "Technology"]
-    },
-    {
-        title: "The Evolution of Electric Vehicles",
-        date: "2023-12-12",
-        author: "Rachel Adams",
-        tags: ["Automotive", "Technology", "Environment"]
-    },
-    {
-        title: "The Art of Mindfulness and Meditation",
-        date: "2023-11-25",
-        author: "David Black",
-        tags: ["Health", "Wellness", "Mindfulness"]
-    },
-    {
-        title: "Exploring Ancient Civilizations",
-        date: "2023-10-14",
-        author: "Laura Blue",
-        tags: ["History", "Archaeology", "Culture"]
-    },
-    {
-        title: "The Science Behind Climate Change",
-        date: "2023-09-05",
-        author: "Steven Gold",
-        tags: ["Climate Change", "Environment", "Science"]
-    }
-];
 
 export function Stories(){
     const [isNavbarVisible, setIsNavbarVisible] = useState(false);
+    const [blogs, setBlogs]= useState<bloginterface[]>([]);
+    const [page, setPage] = useState(0);
     const story = useRef<HTMLDivElement>(null);
+
     useEffect(()=>{
         const handleMouseMove = (e:MouseEvent)=>{
             if(e.clientY < 50){
@@ -91,16 +33,47 @@ export function Stories(){
                 setIsNavbarVisible(false);
             }
         }
+
         const storydiv = story.current
         window.addEventListener('mousemove',handleMouseMove)
         if(storydiv) storydiv.addEventListener('scroll',handleScroll);
-
-        return ()=>{
-            window.removeEventListener('mousemove',handleMouseMove)
-            if(storydiv) storydiv.removeEventListener('scroll',handleScroll)
-    
-        };
+        if(storydiv) storydiv.addEventListener('scroll',handleRelode);
+     
     },[]);
+    
+    const handleRelode = async()=>{
+        if( story.current && story.current.scrollHeight == story.current.scrollTop + story.current.clientHeight){
+            setPage(prev => prev+4);
+        }
+    }
+    
+    useEffect(()=>{
+        console.log(page,blogs.length);
+        loadblogs(page,4);
+    },[page])
+    const loadblogs = async(skip:number , limit:number)=>{
+        try{
+            const blog= await axios.post('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
+                skip:skip,
+                limit:limit
+            },{
+                headers:{
+                    Authorization: localStorage.getItem('token')
+                }
+            })
+            const all_blog:bloginterface[] = blog.data.posts;
+            if(all_blog == null){
+                return
+            }
+            all_blog.map(i =>{
+                setBlogs(prevblogs => [...prevblogs,i])
+            })
+            setPage(skip);
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
     return (
         <div className="absolute w-full h-full" >
             <div className="flex flex-wrap overflow-y-scroll h-full snap-y snap-mandatory" ref={story}>
@@ -110,10 +83,10 @@ export function Stories(){
                 <IntroCard/>
                 <BigCard title="Welcome to Safesage." date="28-12-2001" author="vidit" tags={['sdvsdvsd','sdsdfsds','sdfsdf','sfsdfdasf','afdafaffas']} />
                 <div className="flex flex-wrap justify-center mx-20 mt-10 w-full snap-start items-center">
-                    {tempcontent.map((item,index)=>{
+                    {blogs.map((item)=>{
                         return(
-                            <div key={index}>
-                                <SmallCard title={item.title} date={item.date} author={item.author} tags={item.tags} />
+                            <div key={item.id}>
+                                <SmallCard title={item.title} date={item.date.split('T')[0]} author={item.author.name} tags={[]} />
                             </div>
                         )
                     })}
@@ -207,4 +180,17 @@ const SmallCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
             </div>
         </div>
     )
+}
+
+
+interface bloginterface{
+    id: string,
+    title: string,
+    content: string,
+    date: string,
+    author: {
+        id: string,
+        name: string,
+        email: string
+    }
 }
