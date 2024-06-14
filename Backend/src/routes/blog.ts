@@ -143,3 +143,21 @@ BlogRouter.post('/:id',async(c)=>{
 	return c.json(unique)
 })
 
+
+BlogRouter.post('/create/bulk',async(c)=>{
+	const blogs:{
+		title:string,
+		content:string
+	}[] = await c.req.json();
+	const query = blogs.map(i=>{
+		return {
+			title: i.title,
+			content: i.content,
+			authorID: c.get('userId'),
+		}
+	})
+	const response = await prisma.post.createMany({
+		data:query
+	})
+	return c.json(response);
+})

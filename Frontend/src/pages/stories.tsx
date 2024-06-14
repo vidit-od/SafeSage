@@ -4,9 +4,10 @@ import img2 from '../assets/4.jpg'
 import { Dates } from "../components/trending"
 import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"
-
+import { useNavigate } from "react-router-dom"
 
 interface cardcontent{
+    id:string
     title: string,
     date: string,
     author: string,
@@ -17,7 +18,9 @@ export function Stories(){
     const [isNavbarVisible, setIsNavbarVisible] = useState(false);
     const [blogs, setBlogs]= useState<bloginterface[]>([]);
     const [page, setPage] = useState(0);
+    const [stopload, setStopLoad] = useState(false);
     const story = useRef<HTMLDivElement>(null);
+    const loader = useRef<HTMLDivElement>(null);
 
     useEffect(()=>{
         const handleMouseMove = (e:MouseEvent)=>{
@@ -48,10 +51,15 @@ export function Stories(){
     }
     
     useEffect(()=>{
-        console.log(page,blogs.length);
-        loadblogs(page,4);
-    },[page])
+        if(!stopload) loadblogs(page,4);
+
+    },[page,stopload]);
+
     const loadblogs = async(skip:number , limit:number)=>{
+        if(loader.current){
+            loader.current.style.position = 'relative';
+            loader.current.style.opacity = "100%";
+        }
         try{
             const blog= await axios.post('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
                 skip:skip,
@@ -63,15 +71,19 @@ export function Stories(){
             })
             const all_blog:bloginterface[] = blog.data.posts;
             if(all_blog == null){
-                return
+                throw new Error('all blogs loaded')
             }
             all_blog.map(i =>{
                 setBlogs(prevblogs => [...prevblogs,i])
             })
-            setPage(skip);
         }
         catch(e){
-            console.log(e);
+            setPage(blogs.length)
+            setStopLoad(true);
+        }
+        if(loader.current){
+            loader.current.style.position = 'absolute';
+            loader.current.style.opacity = "0%";
         }
     }
     return (
@@ -81,16 +93,26 @@ export function Stories(){
                     <MainNavbar/>
                 </div>
                 <IntroCard/>
-                <BigCard title="Welcome to Safesage." date="28-12-2001" author="vidit" tags={['sdvsdvsd','sdsdfsds','sdfsdf','sfsdfdasf','afdafaffas']} />
+                <BigCard id="" title="Welcome to Safesage." date="28-12-2001" author="vidit" tags={['sdvsdvsd','sdsdfsds','sdfsdf','sfsdfdasf','afdafaffas']} />
                 <div className="flex flex-wrap justify-center mx-20 mt-10 w-full snap-start items-center">
                     {blogs.map((item)=>{
                         return(
                             <div key={item.id}>
-                                <SmallCard title={item.title} date={item.date.split('T')[0]} author={item.author.name} tags={[]} />
+                                <SmallCard id={item.id} title={item.title} date={item.date.split('T')[0]} author={item.author.name} tags={[]} />
                             </div>
                         )
                     })}
+
                 </div>
+                <div className=" overflow-hidden p-10 w-full flex justify-center opacity-0 absolute" ref={loader}>
+                        <div className="absolute border-gray-400 border-8 border-solid p-2 rounded-full border-l-green-500 animate-rotate" ></div>
+                </div>
+
+                {(stopload)?<div className=" w-full flex font-space justify-center text-center text-white bg-black py-10 text-2xl">
+                    🛑 Scrolling does not mean reading the blogs! 📜  <br />
+                    All blogs are loaded. ✅  <br />
+                    Try clicking on them and read the contents as well. 📖✨ <br />
+                </div>:<></>}
             </div>
         </div>
     )
@@ -108,7 +130,7 @@ const IntroCard = ()=>{
 }
 const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     return(
-        <div className="h-2/3 w-full relative snap-start overflow-hidden mx-20 -translate-y-2 rounded-sm font-space cursor-pointer z-10" onClick={()=>console.log('ho')}>
+        <div className="h-2/3 w-full relative snap-start overflow-hidden mx-20 -translate-y-2 rounded-sm font-space cursor-pointer z-10">
             <div className="w-full h-full -z-10 ">
                 <img src={img1} alt="" className="w-full h-full object-cover" />
             </div>
@@ -151,7 +173,8 @@ const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     )
 }
 
-const SmallCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
+const SmallCard:React.FC<cardcontent> = ({id,title,date,author,tags})=>{
+    const navigate = useNavigate();
     return(
         <div className="w-50vw mx-2 max-w-68 snap-start pt-2 font-space">
             <div className="w-full h-40">
@@ -159,13 +182,12 @@ const SmallCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
             </div>
             <div className="pt-5 flex">
                 <div className="">{author}</div>
-                <div className="ml-10">{date.split('-')[0] + ' ' + Dates[parseInt(date.split('-')[1])] + ' ' + date.split('-')[2]}</div>
+                <div className="ml-10">{date.split('-')[2] + ' ' + Dates[parseInt(date.split('-')[1])] + ' ' + date.split('-')[0]}</div>
             </div>
             <div className="flex justify-between">
                 <div className=" font-bold text-2xl line-clamp-2 h-20">{title}</div>
-                <div className="">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5"><path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z" clipRule="evenodd" /></svg>
-
+                <div className="hover:bg-black hover:transition-all hover:duration-150 h-fit rounded-full hover:scale-150 group" onClick={()=> navigate(`/stories/${id}`)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 group-hover:rotate-45 transition-all group-hover:fill-white duration-150"><path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z" clipRule="evenodd" /></svg>
                 </div>
             </div>
             <div className="flex">
