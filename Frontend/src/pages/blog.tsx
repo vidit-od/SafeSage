@@ -47,7 +47,7 @@ export function Blog(){
     return(
         <div className=" relative">
             <MainNavbar/>
-            <div className="flex pt-14 relative w-full flex-wrap  flex-col md:flex-row px-5 md:px-10 lg:px-20">
+            <div className="flex relative w-full flex-wrap  flex-col md:flex-row px-5 md:px-10 lg:px-20">
                 <Intro/>
                 <Trending/>
             </div>

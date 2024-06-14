@@ -29,7 +29,8 @@ export default {
       width:{
         "96": "400px",
         "block": "15px",
-        "1":"2px"
+        "1":"2px",
+        "50vw":"39vw"
       },
       height:{
         "50vh": "50vh",

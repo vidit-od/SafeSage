@@ -1,7 +1,79 @@
 import { MainNavbar } from "../components/navbar"
 import img1 from '../assets/3.jpg'
+import img2 from '../assets/4.jpg'
 import { Dates } from "../components/trending"
 import React, { useEffect, useRef, useState } from "react"
+
+
+interface cardcontent{
+    title: string,
+    date: string,
+    author: string,
+    tags: string[],
+}
+const tempcontent: cardcontent[] = [
+    {
+        title: "Exploring the Cosmos",
+        date: "2024-06-01",
+        author: "Jane Doe",
+        tags: ["Astronomy", "Science", "Space"]
+    },
+    {
+        title: "Advancements in AI Technology",
+        date: "2024-05-15",
+        author: "John Smith",
+        tags: ["Technology", "AI", "Innovation"]
+    },
+    {
+        title: "The Future of Renewable Energy",
+        date: "2024-04-10",
+        author: "Alice Johnson",
+        tags: ["Environment", "Energy", "Sustainability"]
+    },
+    {
+        title: "A Journey Through the World of Quantum Computing",
+        date: "2024-03-22",
+        author: "Bob Brown",
+        tags: ["Quantum Computing", "Technology", "Science"]
+    },
+    {
+        title: "The Impact of Social Media on Society",
+        date: "2024-02-18",
+        author: "Emily White",
+        tags: ["Social Media", "Society", "Communication"]
+    },
+    {
+        title: "Understanding the Basics of Blockchain",
+        date: "2024-01-30",
+        author: "Michael Green",
+        tags: ["Blockchain", "Cryptocurrency", "Technology"]
+    },
+    {
+        title: "The Evolution of Electric Vehicles",
+        date: "2023-12-12",
+        author: "Rachel Adams",
+        tags: ["Automotive", "Technology", "Environment"]
+    },
+    {
+        title: "The Art of Mindfulness and Meditation",
+        date: "2023-11-25",
+        author: "David Black",
+        tags: ["Health", "Wellness", "Mindfulness"]
+    },
+    {
+        title: "Exploring Ancient Civilizations",
+        date: "2023-10-14",
+        author: "Laura Blue",
+        tags: ["History", "Archaeology", "Culture"]
+    },
+    {
+        title: "The Science Behind Climate Change",
+        date: "2023-09-05",
+        author: "Steven Gold",
+        tags: ["Climate Change", "Environment", "Science"]
+    }
+];
+
 export function Stories(){
     const [isNavbarVisible, setIsNavbarVisible] = useState(false);
     const story = useRef<HTMLDivElement>(null);
@@ -37,14 +109,14 @@ export function Stories(){
                 </div>
                 <IntroCard/>
                 <BigCard title="Welcome to Safesage." date="28-12-2001" author="vidit" tags={['sdvsdvsd','sdsdfsds','sdfsdf','sfsdfdasf','afdafaffas']} />
-                <div className="flex flex-wrap mx-20 w-full snap-start">
-                    <SmallCard/>
-                    <SmallCard/>
-                    <SmallCard/>
-                    <SmallCard/>
-                    <SmallCard/>
-                    <SmallCard/>
-                    
+                <div className="flex flex-wrap justify-center mx-20 mt-10 w-full snap-start items-center">
+                    {tempcontent.map((item,index)=>{
+                        return(
+                            <div key={index}>
+                                <SmallCard title={item.title} date={item.date} author={item.author} tags={item.tags} />
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </div>
@@ -60,13 +132,6 @@ const IntroCard = ()=>{
             <div className="w-full text-center font-space"> The Latest industry news, interviews, technologies, and resources</div>
         </div>
     )
-}
-
-interface cardcontent{
-    title: string,
-    date: string,
-    author: string,
-    tags: string[],
 }
 const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     return(
@@ -113,10 +178,33 @@ const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     )
 }
 
-const SmallCard = ()=>{
+const SmallCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     return(
-        <div className="bg-gray-400 w-1/2 h-50vh snap-start">
-            hell
+        <div className="w-50vw mx-2 max-w-68 snap-start pt-2 font-space">
+            <div className="w-full h-40">
+                <img src={img2} alt="" className=" w-full h-full object-cover "/>
+            </div>
+            <div className="pt-5 flex">
+                <div className="">{author}</div>
+                <div className="ml-10">{date.split('-')[0] + ' ' + Dates[parseInt(date.split('-')[1])] + ' ' + date.split('-')[2]}</div>
+            </div>
+            <div className="flex justify-between">
+                <div className=" font-bold text-2xl line-clamp-2 h-20">{title}</div>
+                <div className="">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5"><path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z" clipRule="evenodd" /></svg>
+
+                </div>
+            </div>
+            <div className="flex">
+            {tags.map((tag, index)=>{
+                if(index > 1) return
+                return(
+                    <div className=" w-min rounded-full px-2 text-gray-500 border-2 border-solid border-gray-500 mr-2 line-clamp-1" key={index}>
+                        {tag}
+                    </div>
+                )
+            })}
+            </div>
         </div>
     )
 }
