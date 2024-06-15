@@ -86,35 +86,19 @@ BlogRouter.put('/',async(c)=>{
 	}
 })
 
-// api/v1/blog/id route		: To get specific post
-// api/v1/blog/bulk route	: To get all posts
-BlogRouter.post('/:id',async(c)=>{
-	const postid = c.req.param('id');
-	if( postid == 'Bulk' || postid == 'bulk'){
-		const response = await c.req.json()
-		if( !response || !response.limit) {
-			const posts = await prisma.post.findMany({
-				select:{
-					id : true,
-					title: true,
-					content: true,
-					date: true,
-					author:{
-						select:{
-							id: true,
-							name: true,
-							email: true
-						}
-					}
-				}
-			})
-			return c.json({posts});
-		}
+BlogRouter.get('/bulk',async(c)=>{
+
+    const skipstr = c.req.queries('skip')
+    const limitstr = c.req.queries('limit')
+	if(skipstr != undefined && limitstr!= undefined){
+		const skip = parseInt(skipstr[0])
+		const limit = parseInt(limitstr[0])
+
 		const total_posts = await prisma.post.count();
-		if(response.skip > total_posts) return c.json({posts: null})
+		if(skip > total_posts) return c.json({posts: null})
 		const posts = await prisma.post.findMany({
-			skip: response.skip,
-			take: response.limit,
+			skip: skip,
+			take: limit,
 			select:{
 				id : true,
 				title: true,
@@ -131,19 +115,55 @@ BlogRouter.post('/:id',async(c)=>{
 		})
 		return c.json({posts});
 	}
-	const userId = c.get('userId');
+	const posts = await prisma.post.findMany({
+		select:{
+			id : true,
+			title: true,
+			content: true,
+			date: true,
+			author:{
+				select:{
+					id: true,
+					name: true,
+					email: true
+				}
+			}
+		}
+	})
+	return c.json({posts});
+})
+
+BlogRouter.get('get/:id',async(c)=>{
+	const postid = c.req.param('id');
 	const unique = await prisma.post.findUnique({
 		where:{
-			id: postid,
-			authorID: userId,
+			id: postid
+		},
+		select:{
+			title:true,
+			content:true,
+			tags: {
+				select:{
+					tag: {
+						select:{
+							id:true,
+							name: true,
+						}
+					}
+				}
+			},
+			date:true,
+			author:{
+				select:{
+					name:true,
+				}
+			}
 		}
 	})
 
 	if( !unique)return c.json({msg: 'Invalid Postid'},400);
 	return c.json(unique)
 })
-
-
 BlogRouter.post('/create/bulk',async(c)=>{
 	const blogs:{
 		title:string,

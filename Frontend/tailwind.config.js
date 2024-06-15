@@ -34,12 +34,14 @@ export default {
       },
       height:{
         "50vh": "50vh",
+        "2/3vh":"300px"
       },
       rotate:{
         "30":"20deg"
       },
       translate:{
-        "30": "118.5px"
+        "30": "118.5px",
+        "screen": "100vh"
       },
       animation:{
         "rotate"        : "circle 1s  linear infinite",

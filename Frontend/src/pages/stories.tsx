@@ -61,10 +61,11 @@ export function Stories(){
             loader.current.style.opacity = "100%";
         }
         try{
-            const blog= await axios.post('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
-                skip:skip,
-                limit:limit
-            },{
+            const blog= await axios.get('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
+                params:{
+                    skip:skip,
+                    limit:limit
+                },
                 headers:{
                     Authorization: localStorage.getItem('token')
                 }

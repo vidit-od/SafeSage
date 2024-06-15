@@ -6,6 +6,7 @@ import { Blog } from './pages/blog'
 import { BlogWrite } from './pages/blogwrite'
 import { RecoilRoot } from 'recoil'
 import { Stories } from './pages/stories'
+import { Storyid } from './pages/storyID'
 
 function App() {
 
@@ -16,7 +17,7 @@ function App() {
         <Routes>
           <Route path='/signup' element = {<Signup/>}/>
           <Route path='/signin' element = {<Signin/>}/>
-          {/* <Route path='/blog/:id' element = {<Blogid/>}/> */}
+          <Route path='/stories/:id' element = {<Storyid/>}/>
           <Route path='/blog/write' element = {<BlogWrite/>}/>
           <Route path='/blog/' element = {<Blog/>}/>
           <Route path='/stories/' element = {<Stories/>}/>
