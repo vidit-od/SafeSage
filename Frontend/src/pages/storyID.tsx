@@ -3,7 +3,10 @@ import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import img from '../assets/5.jpg'
 import { MainNavbar } from "../components/navbar";
-
+import  {marked} from 'marked'
+marked.setOptions({
+    gfm:true
+})
 interface blog{
     title: string,
     content: string,
@@ -22,20 +25,32 @@ interface blog{
 export function Storyid(){
     const {id} = useParams();
     const [blog,setBlog] = useState<blog>();
-
+    const [content , setcontent] = useState<string>("");
     useEffect(()=>{
         loadblog();
     },[]);
 
+    const preprocess = async(data:string)=>{
+        const BRadd = data.replace(/\\n/g, ' \n ')
+        const heddings = await marked(BRadd);
+        const h3change = heddings.replace(/<h3>/g, '<div class= "text-lg font-semibold py-5 snap-start -translate-x-4">')
+        const h3change2 = h3change.replace(/<\/h3>/g, '</div>')
+        const h2change = h3change2.replace(/<h2>/g, '<div class= "underline text-xl font-bold py-5 snap-start -translate-x-4">')
+        const h2change2 = h2change.replace(/<\/h2>/g, '</div>')
+        return h2change2;
+    }
+
     const loadblog= async()=>{
         try{
-            const response = await axios.get(`https://backend.vidit894.workers.dev/api/v1/blog/get/${id}`,{
+            const response = await axios.get<blog>(`https://backend.vidit894.workers.dev/api/v1/blog/get/${id}`,{
                 headers:{
                     Authorization: localStorage.getItem('token')
                 }
             });
-            console.log(response.data)
             setBlog(response.data);
+            const parsed= response.data.content;
+            const temp = await preprocess(parsed)
+            setcontent(temp);
         }
         catch(e){
             console.log(e)
@@ -50,7 +65,7 @@ export function Storyid(){
                 <MainNavbar/>
             </div>
             <TopContent title={blog.title}/>
-            <BottomContent blog={blog}/>
+            <BottomContent blog={blog} content={content}/>
         </div>
     )
 }
@@ -68,7 +83,7 @@ const TopContent:React.FC<{title:string}> = ({title})=>{
     )
 }
 
-const BottomContent:React.FC<{blog:blog}> = ({blog})=>{
+const BottomContent:React.FC<{blog:blog, content:string}> = ({blog, content})=>{
     return(
         <div className=" absolute translate-y-screen px-20 my-1 w-full snap-start">
             <div className="w-full border-b-2 "></div>
@@ -99,8 +114,9 @@ const BottomContent:React.FC<{blog:blog}> = ({blog})=>{
                         </div>:null}
                     </div>
                 </div>
-                <div className=" w-2/3 p-2">{blog.content}</div>
+                <div className=" w-2/3 p-2  pl-10" dangerouslySetInnerHTML={{__html: content}}></div>
             </div>
         </div>
     )
 }
+

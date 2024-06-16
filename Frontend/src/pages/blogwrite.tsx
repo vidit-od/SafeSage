@@ -6,21 +6,39 @@ import { useRecoilValue } from "recoil";
 import { useratom } from "../store/atom/useratom";
 import { Logo } from "../components/navbar";
 export function BlogWrite(){
-    const textrows = 16;
     const [title,setTitle] = useState('');
-    const [content,setContent] = useState('');
+    const [contentLines, setContentLines] = useState<string[]>(['']);
+    const [contentStyles, setcontentStyles] = useState<string[]>(['']);
 
-
+    const handleKeyPress = (e:React.KeyboardEvent, _index:number)=>{
+        if( e.key == 'Enter'){
+            e.preventDefault();
+            setContentLines([...contentLines,'']);
+        }
+    }
+    const handleChange = (e:React.ChangeEvent<HTMLInputElement>, index:number)=>{
+        const newContentLines = [...contentLines];
+        newContentLines[index] = e.target.value;
+        setContentLines(newContentLines);
+    }
+    const handleStyle = (e:React.ChangeEvent<HTMLSelectElement>, index:number)=>{
+        const newContentStyles = [...contentStyles];
+        newContentStyles[index] = e.target.value;
+        setcontentStyles(newContentStyles);
+    }
     return(
         <div>
-            <BlogWriteNavbar title={title} content = {content} state={(title.length < 5 || content.length < 5)? false : true } />
+            <BlogWriteNavbar title={title} contentLine={contentLines} contentStyle={contentStyles} state={(title.length < 5)? false : true } />
             <div className="w-full flex items-center px-20 py-5 pb-0">
                 <div className="absolute -translate-x-full py-2">Title</div>
                 <input type="text " name="" id="" placeholder="Title" className=" outline-none w-screen translate-x-5 p-2 rounded-md text-3xl font-bold" value={title} onChange={(e)=>setTitle(e.target.value)}/>
             </div>
-            <div className="w-full flex px-20 py-5 pb-0">
-                <div className="absolute -translate-x-full py-2">Content</div>
-                <textarea name="" id="" rows={textrows} value={content} onChange={(e)=>setContent(e.target.value)} className=" outline-none w-screen translate-x-5 p-2 h-fit border-2 border-gray-300 border-solid rounded-md" placeholder="Tell your story..."/>
+            <div className="w-full flex flex-col px-20 py-5 pb-0">
+                {contentLines.map((i,index)=>{
+                    return(
+                        <Content_line key={index} value={i} onKeyPress={(e)=> handleKeyPress(e,index)} onChange={(e)=> handleChange(e,index)} ChangeStyle={(e)=> handleStyle(e,index)} />
+                    )
+                })}
             </div>
         </div>
     )
@@ -28,20 +46,21 @@ export function BlogWrite(){
 
 interface Blog{
     title: string,
-    content: string,
+    contentLine: string[]
     state: boolean,
+    contentStyle:string[]
 }
-const BlogWriteNavbar: React.FC<Blog> = ({title, content , state})=>{
+const BlogWriteNavbar: React.FC<Blog> = ({title,contentLine, contentStyle , state})=>{
     
     return(
         <div className="snap-start w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
             <Logo/>
-            <NavLinks title ={title} content={content} state={state}/>
+            <NavLinks title ={title} contentLine={contentLine} contentStyle={contentStyle} state={state}/>
         </div>
     )
 }
 
-const NavLinks:React.FC<Blog> = ({title,content,state})=>{
+const NavLinks:React.FC<Blog> = ({title,contentLine,contentStyle,state})=>{
     const user = useRecoilValue(useratom);
     const navigate = useNavigate();
 
@@ -62,6 +81,18 @@ const NavLinks:React.FC<Blog> = ({title,content,state})=>{
     },[state]);
 
     const publishblog = async()=>{
+        let content = ''
+        for(let i = 0 ; i< contentLine.length; i++){
+            if(contentStyle[i] == '<p>'){
+                content = content + `${contentLine[i]} \\n `
+            } 
+            else if(contentStyle[i] == `<h2>`){
+                content = content + ` ## ${contentLine[i]} \\n `
+            }
+            else if(contentStyle[i] == `<h3>`){
+                content = content + ` ### ${contentLine[i]} \\n `
+            }
+        }
         if(loader.current && name.current) {
             loader.current.style.opacity = "1";
             name.current.style.transform = "translateX(0px)"
@@ -128,3 +159,33 @@ const NavLinks:React.FC<Blog> = ({title,content,state})=>{
     </div>
     )
 }
+
+interface ContentLineProps {
+    value: string;
+    onKeyPress: (e: React.KeyboardEvent) => void;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    ChangeStyle: (e:React.ChangeEvent<HTMLSelectElement>) => void;
+}
+
+const Content_line: React.FC<ContentLineProps> = ({value, onKeyPress, onChange , ChangeStyle})=>{
+    const inputREf = useRef<HTMLInputElement>(null)
+    const selectref = useRef<HTMLSelectElement>(null)
+    useEffect(()=>{
+        if( inputREf.current) inputREf.current.focus();
+        if( selectref.current) {
+            selectref.current.selectedIndex = 0;
+            const event = new Event('change', { bubbles: true });
+            selectref.current.dispatchEvent(event);
+        }
+    },[])
+
+    return(
+    <div className="flex w-full items-center">
+        <select className="absolute -translate-x-full py-2" onChange={ChangeStyle} ref={selectref}>
+            <option value="<p>">Paragraph</option>
+            <option value="<h2>">Heading 2</option>
+            <option value="<h3>">Heading 3</option>
+        </select>
+        <input type="text" className={`outline-none w-full ml-5 font-space ${(selectref.current?.value == '<h2>')?' text-xl font-bold underline':null} ${(selectref.current?.value == '<h3>')?' text-lg font-semibold':null}`} value={value} onChange={onChange} onKeyPress={onKeyPress} ref={inputREf}/>
+    </div>
+)}
