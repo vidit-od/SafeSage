@@ -181,3 +181,74 @@ BlogRouter.post('/create/bulk',async(c)=>{
 	})
 	return c.json(response);
 })
+
+BlogRouter.get('/filter', async(c)=>{
+	let filter_arr =c.req.queries('filter');
+	if(filter_arr == undefined) {
+		filter_arr = ['']
+	};
+	let filter = filter_arr[0];
+	
+	let tag_arr =c.req.queries('tag');
+	if(tag_arr == undefined) {
+		tag_arr = ['']
+	};
+	let tag = tag_arr[0];
+	if(tag!=''){
+		const posts = await prisma.post.findMany({
+			where:{
+				title:{
+					contains:filter,
+					mode: 'insensitive',
+				},
+				tags:{
+					some:{
+						tag:{
+							name:{
+								contains: tag,
+								mode: 'insensitive',
+							}
+						}
+					}
+				}
+			},
+			select:{
+				id : true,
+				title: true,
+				content: true,
+				date:true,
+				author:{
+					select:{
+						id: true,
+						name: true,
+						email: true
+					}
+				}
+			}
+		})
+		return c.json({posts});
+	}
+	const posts = await prisma.post.findMany({
+		where:{
+			title:{
+				contains:filter,
+				mode:'insensitive',
+			}
+		},
+		select:{
+			id : true,
+			title: true,
+			content: true,
+			date:true,
+			author:{
+				select:{
+					id: true,
+					name: true,
+					email: true
+				}
+			}
+		}
+	})
+	return c.json({posts});
+
+})

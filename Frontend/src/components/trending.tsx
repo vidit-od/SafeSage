@@ -21,11 +21,13 @@ export function Trending(){
     },[])
                 
     const loadblogs = async()=>{
-        const blog = await axios.post('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
-            limit:2
-        },{
+        const blog = await axios.get('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
             headers:{
                 Authorization: localStorage.getItem('token')
+            },
+            params:{
+                skip:0,
+                limit:2,
             }
         })
         setBlogs([...blogs, {

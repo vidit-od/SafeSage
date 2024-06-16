@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function BlogCatagories(){
 
@@ -20,6 +21,7 @@ export function BlogCatagories(){
             ...tags.map(tag => {return tag.name})
         ])
     }
+    const navigate = useNavigate();
     return(
         <div className="w-full bg-orange-100 py-10 text-center overflow-hidden">
             <div className=" font-bold font-space text-3xl">Blog Category</div>
@@ -29,15 +31,15 @@ export function BlogCatagories(){
                     return (
                     <div className="px-20 w-fit flex items-center relative py-10 my-5 justify-center" key={index}>
                         <div className="bg-orange-200 absolute w-1 h-full left-0 rotate-30"></div>
-                        <p className=" whitespace-nowrap text-xl font-thin">{i}</p>
+                        <button className=" whitespace-nowrap text-xl font-thin" onClick={()=> navigate(`/stories-filter?filter=&tag=${i}`)}>{i}</button>
                     </div>
                     )
                 })}
                 {blogCategories.map(function(i,index){
                     return (
-                    <div className="px-20 w-fit flex items-center relative py-10 my-5 justify-center" key={index+10}>
+                    <div className="px-20 w-fit flex items-center relative py-10 my-5 justify-center" key={index}>
                         <div className="bg-orange-200 absolute w-1 h-full left-0 rotate-30"></div>
-                        <p className=" whitespace-nowrap text-xl font-thin">{i}</p>
+                        <button className=" whitespace-nowrap text-xl font-thin" onClick={()=> navigate(`/stories-filter?filter=&tag=${i}`)}>{i}</button>
                     </div>
                     )
                 })}

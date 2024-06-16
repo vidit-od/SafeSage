@@ -7,6 +7,7 @@ import { BlogWrite } from './pages/blogwrite'
 import { RecoilRoot } from 'recoil'
 import { Stories } from './pages/stories'
 import { Storyid } from './pages/storyID'
+import { StoriesFilter } from './pages/storiesFilter'
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path='/blog/write' element = {<BlogWrite/>}/>
           <Route path='/blog/' element = {<Blog/>}/>
           <Route path='/stories/' element = {<Stories/>}/>
+          <Route path='/stories-filter' element = {<StoriesFilter/>}/>
         </Routes>
       </BrowserRouter>
       </RecoilRoot>

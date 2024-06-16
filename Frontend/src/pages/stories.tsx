@@ -174,7 +174,7 @@ const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     )
 }
 
-const SmallCard:React.FC<cardcontent> = ({id,title,date,author,tags})=>{
+export const SmallCard:React.FC<cardcontent> = ({id,title,date,author,tags})=>{
     const navigate = useNavigate();
     return(
         <div className="w-50vw mx-2 max-w-68 snap-start pt-2 font-space">
@@ -206,7 +206,7 @@ const SmallCard:React.FC<cardcontent> = ({id,title,date,author,tags})=>{
 }
 
 
-interface bloginterface{
+export interface bloginterface{
     id: string,
     title: string,
     content: string,
