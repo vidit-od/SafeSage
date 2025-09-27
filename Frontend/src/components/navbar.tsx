@@ -1,7 +1,7 @@
 import { useRecoilValue } from "recoil"
 import { useratom } from "../store/atom/useratom"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function MainNavbar(){
     const location = useLocation();
@@ -55,8 +55,9 @@ const GuestLinks = ()=>{
 
 const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
     const USER = useRecoilValue(useratom);
+    const [userPanel, setuserPanel] = useState<boolean>(false);
     const navigate = useNavigate();
-
+    
     const home = useRef<HTMLButtonElement>(null);
     const stories = useRef<HTMLButtonElement>(null);
     const writing = useRef<HTMLButtonElement>(null);
@@ -72,11 +73,60 @@ const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
         return <GuestLinks/>
     }
     return(
-    <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={home} onClick={()=>navigate('/blog')}>Home</button>
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
-        <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>
-        <button className="w-9 h-9 flex justify-center items-center border-2 border-black bg-black text-white border-solid rounded-full">{USER.name[0].toString().toUpperCase()}</button>
-    </div>
+    <>
+        <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
+            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={home} onClick={()=>navigate('/blog')}>Home</button>
+            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
+            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>
+            <div>
+            <button
+              className="w-9 h-9 flex justify-center items-center 
+                         border-2 border-none bg-black text-white 
+                         rounded-full 
+                         hover:ring-4 hover:ring-gray-400"
+                onClick={() => setuserPanel(!userPanel)}
+            >
+              {USER.name[0].toString().toUpperCase()}
+            </button>
+
+                <LogOut userPanel={userPanel}/>
+            </div>
+        </div>
+    </>
     )
 }
+const LogOut = ({userPanel}: {userPanel:boolean}) =>{
+    const navigate = useNavigate();
+
+    const LogoutLogic = ()=>{
+        localStorage.removeItem('token');
+        navigate('/signup');
+    }
+    return(
+    <>
+        <div
+        className={`absolute right-0 mt-3 w-36 rounded-sm shadow-bdr-light bg-white transition-all duration-200 z-10
+        ${userPanel ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3"}`}>
+        
+        {/* Triangle pointer */}
+        <div className="absolute right-2 -translate-y-3">
+<svg
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  className="w-5 h-5"
+>
+  <path
+    d="M22 17H2L12 6l10 11z"
+    className="fill-white"
+    style={{ filter: 'drop-shadow(1px -1px 1px rgb(207, 217, 222))' }}
+  />
+</svg>
+
+        </div>
+
+        {/* Dropdown box */}
+        <div className="my-2 rounded-sm bg-white">
+            <button className="text-gray-800 p-2 text-sm font-medium w-full text-left hover:bg-slate-300" onClick={()=>LogoutLogic()}>Logout</button>
+        </div>
+    </div>
+    </>)}
