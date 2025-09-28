@@ -29,7 +29,7 @@ const NavLinks:React.FC<{loc: string}> = ({loc})=>{
     const USER = useRecoilValue(useratom);
     return(
         <>
-            {(USER.id == null)?<GuestLinks/>:<LoggedLinks loc={loc}/>}        
+            <LoggedLinks loc={loc}/>        
         </>
     )
 }
@@ -39,7 +39,7 @@ const GuestLinks = ()=>{
     return(
         <>
             <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
-                <button className="px-10 py-2 border-2 border-black border-solid rounded-full transition-all duration-500 flex justify-center items-center group relative" onClick={()=> navigate('/signup')}>
+                <button className="px-8 py-1 border-2 border-black border-solid rounded-full transition-all duration-500 flex justify-center items-center group relative" onClick={()=> navigate('/signup')}>
                     <div className="flex justify-center items-center translate-x-3 transition-all duration-300 group-hover:translate-x-0">
                         Signup
                         <div className=" translate-y-px opacity-0 -translate-x-3 group-hover:translate-x-3 transition-all group-hover:opacity-100 duration-300">
@@ -68,16 +68,15 @@ const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
         else if(loc.loc == '/stories') stories.current.style.fontWeight= "700";
     },[loc])
     
-
-    if( !USER || !USER.name) {
-        return <GuestLinks/>
-    }
     return(
     <>
         <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
             <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={home} onClick={()=>navigate('/blog')}>Home</button>
             <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
-            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>
+            { !USER.name && <GuestLinks/>}
+            { USER && USER.name && 
+            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>}
+            {USER && USER.name &&
             <div>
             <button
               className="w-9 h-9 flex justify-center items-center 
@@ -88,9 +87,8 @@ const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
             >
               {USER.name[0].toString().toUpperCase()}
             </button>
-
-                <LogOut userPanel={userPanel}/>
-            </div>
+            <LogOut userPanel={userPanel}/>
+            </div>}
         </div>
     </>
     )

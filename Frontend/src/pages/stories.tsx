@@ -40,18 +40,18 @@ export function Stories(){
         const storydiv = story.current
         window.addEventListener('mousemove',handleMouseMove)
         if(storydiv) storydiv.addEventListener('scroll',handleScroll);
-        if(storydiv) storydiv.addEventListener('scroll',handleRelode);
+        if(storydiv) storydiv.addEventListener('scroll',handleReload);
      
     },[]);
     
-    const handleRelode = async()=>{
+    const handleReload = async()=>{
         if( story.current && story.current.scrollHeight == story.current.scrollTop + story.current.clientHeight){
-            setPage(prev => prev+4);
+            setPage(prev => prev+10);
         }
     }
     
     useEffect(()=>{
-        if(!stopload) loadblogs(page,4);
+        if(!stopload) loadblogs(page,10);
 
     },[page,stopload]);
 
@@ -88,14 +88,14 @@ export function Stories(){
         }
     }
     return (
-        <div className="absolute w-full h-full" >
-            <div className="flex flex-wrap overflow-y-scroll h-full snap-y snap-mandatory" ref={story}>
+        <div className="absolute w-full h-full bg-[#f5f5f5]" >
+            <div className="flex flex-wrap overflow-y-scroll h-full" ref={story}>
                 <div className={` absolute z-50 w-full transition-all duration-200 ${(isNavbarVisible)? 'translate-y-0' : '-translate-y-full'} `}>
                     <MainNavbar/>
                 </div>
                 <IntroCard/>
-                <BigCard id="" title="Welcome to Safesage." date="28-12-2001" author="vidit" tags={['sdvsdvsd','sdsdfsds','sdfsdf','sfsdfdasf','afdafaffas']} />
-                <div className="flex flex-wrap justify-center mx-20 mt-10 w-full snap-start items-center">
+                <BigCard id="" title="The Making of Safesage." date="28-12-2001" author="vidit" tags={[]} />
+                <div className="flex flex-wrap justify-center mx-20 mt-10 w-full items-center">
                     {blogs.map((item)=>{
                         return(
                             <div key={item.id}>
@@ -110,9 +110,9 @@ export function Stories(){
                 </div>
 
                 {(stopload)?<div className=" w-full flex font-space justify-center text-center text-white bg-black py-10 text-2xl">
-                    🛑 Scrolling does not mean reading the blogs! 📜  <br />
-                    All blogs are loaded. ✅  <br />
-                    Try clicking on them and read the contents as well. 📖✨ <br />
+                    🛑 This is not a Platform to DoomScroll  <br />
+                    All blogs are loaded.<br />
+                    Try clicking on them and read the contents as well.<br />
                 </div>:<></>}
             </div>
         </div>
@@ -121,7 +121,7 @@ export function Stories(){
 
 const IntroCard = ()=>{
     return(
-        <div className="h-1/3 w-full snap-start flex justify-end items-end px-10 py-7 flex-col">
+        <div className="h-1/3 w-full flex justify-end items-end px-10 py-7 flex-col">
             <div className="font-space w-full text-center text-5xl font-bold flex items-center justify-center">
                 Welcome to Safesage.
             </div>
@@ -131,7 +131,7 @@ const IntroCard = ()=>{
 }
 const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
     return(
-        <div className="h-2/3 w-full relative snap-start overflow-hidden mx-20 -translate-y-2 rounded-sm font-space cursor-pointer z-10">
+        <div className="h-2/3 w-full relative overflow-hidden mx-20 -translate-y-2 rounded-sm font-space cursor-pointer z-10">
             <div className="w-full h-full -z-10 ">
                 <img src={img1} alt="" className="w-full h-full object-cover" />
             </div>
@@ -177,17 +177,14 @@ const BigCard:React.FC<cardcontent> = ({title,date,author,tags})=>{
 export const SmallCard:React.FC<cardcontent> = ({id,title,date,author,tags})=>{
     const navigate = useNavigate();
     return(
-        <div className="w-50vw mx-2 max-w-68 snap-start pt-2 font-space">
-            <div className="w-full h-40">
-                <img src={img2} alt="" className=" w-full h-full object-cover "/>
-            </div>
+        <div className="w-50vw m-2 max-w-68 pt-2 font-space shadow-bdr-light p-5 rounded-lg transition-all cursor-pointer duration-400 hover:bg-white group" onClick={()=> navigate(`/stories/${id}`)}>
             <div className="pt-5 flex">
                 <div className="">{author}</div>
                 <div className="ml-10">{date.split('-')[2] + ' ' + Dates[parseInt(date.split('-')[1])] + ' ' + date.split('-')[0]}</div>
             </div>
             <div className="flex justify-between">
                 <div className=" font-bold text-2xl line-clamp-2 h-20">{title}</div>
-                <div className="hover:bg-black hover:transition-all hover:duration-150 h-fit rounded-full hover:scale-150 group" onClick={()=> navigate(`/stories/${id}`)}>
+                <div className="group-hover:bg-black group-hover:transition-all group-hover:duration-300 h-fit rounded-full group-hover:scale-150 group">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 group-hover:rotate-45 transition-all group-hover:fill-white duration-150"><path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z" clipRule="evenodd" /></svg>
                 </div>
             </div>
