@@ -1,6 +1,5 @@
 import { MainNavbar } from "../components/navbar"
 import img1 from '../assets/3.jpg'
-import img2 from '../assets/4.jpg'
 import { Dates } from "../components/trending"
 import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"

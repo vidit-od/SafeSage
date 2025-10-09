@@ -114,17 +114,26 @@ export function Signin(){
                 </div>
                 </div>
             </div>
-            <div className="relative pointer-events-none w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
+            <div className="relative w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
             md:w-fit">
-                <img src={img} alt="img" className=" w-full h-full object-left object-cover"/>
+                <img src={img} alt="img" className=" pointer-events-none w-full h-full object-left object-cover"/>
                 
-                <div className="absolute top-2 text-white z-10 flex justify-center ml-3">
-                        <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
-                        <div className="text-white ml-1 text-xl font-bold font-space flex items-center">
-                            SafeSage
+                
+                <div className="absolute top-2 w-full text-white z-10 flex justify-center ml-3">
+                        <div className=" pointer-events-none flex justify-between w-full items-center">
+                            <div className="flex pointer-events-none">
+                                <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
+                                <div className="text-white ml-1 text-xl font-bold font-space flex items-center">
+                                SafeSage
+                                </div>
+                            </div>
+                        </div><div className="flex justify-end items-center">
+                            <button className="bg-white z-10 w-40 p-1 text-black rounded-xl mx-5" onClick={()=> navigate('/blog')}>
+                                Continue as Guest
+                            </button>
                         </div>
                 </div>
-                <div className="absolute w-full h-full top-0 bg-semi-black text-white flex flex-col justify-end p-5 items-end">
+                <div className="absolute w-full h-full top-0 bg-semi-black text-white flex flex-col justify-end p-5 items-end  pointer-events-none">
                     <div className="w-full font-space text-8xl translate-y-16 -translate-x-2">"</div>
                     <div className=" font-extrabold text-3xl leading-8 pl-2">In learning you will teach, and in teaching you will learn.
                     </div>

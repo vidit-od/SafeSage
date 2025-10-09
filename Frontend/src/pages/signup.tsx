@@ -122,14 +122,22 @@ export function Signup(){
             </div>
 
             {/* Right image */}
-            <div className="relative pointer-events-none w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
+            <div className="relative w-0 h-full overflow-hidden rounded-r-xl shadow-xl transition-width duration-200 
             md:w-fit">
-                <img src={img} alt="img" className=" w-full h-full object-left object-cover"/>
+                <img src={img} alt="img" className=" w-full h-full object-left object-cover pointer-events-none"/>
                 
-                <div className="absolute top-2 text-white z-10 flex justify-center ml-3">
-                        <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
-                        <div className="text-white ml-1 text-xl font-bold font-space flex items-center">
-                            SafeSage
+                <div className="absolute top-2 w-full text-white z-10 flex justify-center ml-3">
+                        <div className="flex justify-between w-full items-center">
+                            <div className="flex pointer-events-none">
+                                <div className=" font-space text-3xl italics font-extrabold rotate-90">(:)</div>
+                                <div className="text-white ml-1 text-xl font-bold font-space flex items-center">
+                                SafeSage
+                                </div>
+                            </div>
+                        </div><div className="flex justify-end items-center">
+                            <button className="bg-white z-10 w-40 p-1 text-black rounded-xl mx-5" onClick={()=> navigate('/blog')}>
+                                Continue as Guest
+                            </button>
                         </div>
                 </div>
 
