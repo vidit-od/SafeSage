@@ -8,6 +8,8 @@ import axios from "axios"
 import {  useRecoilState } from "recoil"
 import { useratom } from "../store/atom/useratom"
 
+const API = import.meta.env.VITE_API_BASE_URL;
+
 export function Blog(){
     const userState = useRecoilState(useratom);
     const [loading , setLoading] = useState((userState[0].id == null)?true:false);
@@ -29,7 +31,7 @@ export function Blog(){
     }, []);
 
     const loaduser = async()=>{
-        const user = await axios.get('https://backend.vidit894.workers.dev/api/v1/user',{
+        const user = await axios.get(`${API}/api/v1/user`,{
             headers:{
                 Authorization: localStorage.getItem('token')
             }

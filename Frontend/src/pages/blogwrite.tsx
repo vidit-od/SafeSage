@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { useratom } from "../store/atom/useratom";
 import { Logo } from "../components/navbar";
+const API = import.meta.env.VITE_API_BASE_URL;
+
 export function BlogWrite(){
     const [title,setTitle] = useState('');
     const [contentLines, setContentLines] = useState<string[]>(['']);
@@ -105,7 +107,7 @@ const NavLinks:React.FC<Blog> = ({title,contentLine,contentStyle,state})=>{
             })
             if(!success) throw new Error('Zod error')
 
-            const response = await axios.post('https://backend.vidit894.workers.dev/api/v1/blog',{
+            const response = await axios.post(`${API}/api/v1/blog`,{
                 title,
                 content,
             },{

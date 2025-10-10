@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { SmallCard, bloginterface } from "./stories";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_BASE_URL;
+
 export function StoriesFilter(){
     const location = useLocation();
     const navigate = useNavigate();
@@ -22,7 +24,7 @@ export function StoriesFilter(){
     },[])
     const loadblog = async(filter:string,tag:string)=>{
         tag = tag.replace(/%20/g, ' ')
-        const response = await axios.get('https://backend.vidit894.workers.dev/api/v1/blog/filter',{
+        const response = await axios.get(`${API}/api/v1/blog/filter`,{
             headers:{
                 Authorization: localStorage.getItem('token')
             },

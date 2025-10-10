@@ -3,7 +3,7 @@ import img2 from '../assets/3.jpg'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TrendingSkeleton } from '../skeleton/trendingskeleton';
-
+const API = import.meta.env.VITE_API_BASE_URL;
 interface Blogcontent{
     img: string,
     title: string,
@@ -21,7 +21,7 @@ export function Trending(){
     },[])
                 
     const loadblogs = async()=>{
-        const blog = await axios.get('https://backend.vidit894.workers.dev/api/v1/blog/bulk',{
+        const blog = await axios.get(`${API}/api/v1/blog/bulk`,{
             headers:{
                 Authorization: localStorage.getItem('token')
             },

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export function BlogCatagories(){
 
@@ -14,7 +15,7 @@ export function BlogCatagories(){
         name:string
     }
     const loadBlogCatagories = async()=>{
-        const response = await axios.get<tag[]>('https://backend.vidit894.workers.dev/api/v1/tags/get/bulk');
+        const response = await axios.get<tag[]>(`${API}/api/v1/tags/get/bulk`);
         const tags = response.data;
         setblogCategories((prev)=>[
             ...prev,

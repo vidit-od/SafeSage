@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom"
 import img from '../assets/2.jpg' 
 import { useRef, useState } from "react"
 import axios from "axios";
+
+const API = import.meta.env.VITE_API_BASE_URL;
 export function Signin(){
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
@@ -13,7 +15,7 @@ export function Signin(){
         try{
             if(loader.current == null) return ;
             loader.current.style.opacity = '1';
-            const response = await axios.post('https://backend.vidit894.workers.dev/api/v1/user/signin',{
+            const response = await axios.post(`${API}/api/v1/user/signin`,{
                 email,
                 password
             })

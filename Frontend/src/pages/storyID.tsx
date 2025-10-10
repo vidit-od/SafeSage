@@ -6,6 +6,9 @@ import  {marked} from 'marked'
 marked.setOptions({
     gfm:true
 })
+
+const API = import.meta.env.VITE_API_BASE_URL;
+
 interface blog{
     title: string,
     content: string,
@@ -41,7 +44,7 @@ export function Storyid(){
 
     const loadblog= async()=>{
         try{
-            const response = await axios.get<blog>(`https://backend.vidit894.workers.dev/api/v1/blog/get/${id}`,{
+            const response = await axios.get<blog>(`${API}/api/v1/blog/get/${id}`,{
                 headers:{
                     Authorization: localStorage.getItem('token')
                 }

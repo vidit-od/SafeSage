@@ -3,6 +3,8 @@ import img from '../assets/1.jpg'
 import { useRef, useState } from "react"
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_BASE_URL;
+
 export function Signup(){
     const [name,setName] = useState('');
     const [email,setEmail] = useState('');
@@ -15,7 +17,7 @@ export function Signup(){
         try{
             if(loader.current == null) return
             loader.current.style.opacity = "1";
-            const response = await axios.post("https://backend.vidit894.workers.dev/api/v1/user/signup",
+            const response = await axios.post(`${API}/api/v1/user/signup`,
             {
                 name,
                 email,
