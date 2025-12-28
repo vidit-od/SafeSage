@@ -11,8 +11,9 @@ export function BlogWrite(){
     const [title,setTitle] = useState('');
     
     return(
-        <div className="h-screen flex flex-col">
+        <div className="h-screen flex flex-col bg-[#f9fbf8]">
             <BlogWriteNavbar title={title} state={(title.length < 5)? false : true} setTitle={setTitle} />
+            <ToolKit/>
             <BlogCanvas contentFromDB="start writing"/>
         </div>
     )
@@ -75,6 +76,54 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     )
 }
 
+const ToolKit = () => {
+  const applyStyle = (command) => {
+    document.execCommand(command);
+  };
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 border-b bg-white">
+      
+      {/* Bold */}
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => applyStyle("bold")}
+        className="px-2 py-1 rounded hover:bg-gray-200 font-bold"
+      >
+        B
+      </button>
+
+      {/* Italic */}
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => applyStyle("italic")}
+        className="px-2 py-1 rounded hover:bg-gray-200 italic"
+      >
+        I
+      </button>
+
+      {/* Underline */}
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => applyStyle("underline")}
+        className="px-2 py-1 rounded hover:bg-gray-200 underline"
+      >
+        U
+      </button>
+
+      {/* Strike */}
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => applyStyle("strikeThrough")}
+        className="px-2 py-1 rounded hover:bg-gray-200"
+      >
+        S
+      </button>
+    </div>
+  );
+};
+
+
 const BlogCanvas =({contentFromDB} : {contentFromDB:string})=>{
 
     const [content,setContent] = useState("");
@@ -89,13 +138,13 @@ const BlogCanvas =({contentFromDB} : {contentFromDB:string})=>{
         console.log(content)
     }, [content])
     return(
-        <div className=" flex-1 bg-slate-200 p-5">
+        <div className=" flex-1 bg-[#f9fbf8] p-5">
             <div 
                 ref={editorRef} 
                 contentEditable 
                 suppressContentEditableWarning 
                 onInput={e=>{setContent(e.currentTarget.innerHTML)}} 
-                className=" w-full h-full p-2 rounded-md outline-none focus:outline-none cursor-text bg-white">
+                className=" w-full h-full p-2 rounded-md outline-none focus:outline-none cursor-text bg-white shadow-md">
             </div>
         </div>
     )

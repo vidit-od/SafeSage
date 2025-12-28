@@ -24,7 +24,8 @@ export default {
         'blue-custom1':'#719FAE',
         'orange-100':'#fff5Ef',
         'skeleton': '#f1f1f1',
-        'grad': 'linear-gradient(to right, transparent, #d7d7d7, transparent)'
+        'grad': 'linear-gradient(to right, transparent, #d7d7d7, transparent)',
+        'gray-toolkit':'#f0f4f9'
       },
       width:{
         "96": "400px",
