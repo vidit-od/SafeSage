@@ -76,53 +76,108 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     )
 }
 
-const ToolKit = () => {
-  const applyStyle = (command) => {
-    document.execCommand(command);
-  };
+const ToolKit = ()=>{
 
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b bg-white">
-      
-      {/* Bold */}
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => applyStyle("bold")}
-        className="px-2 py-1 rounded hover:bg-gray-200 font-bold"
-      >
-        B
-      </button>
+    interface Tool {
+        name : String,
+        symbol? : String,
+        style? : String,
+        effect: Effect,
+    }
+    interface Tools{
+        tools : Tool[]
+    }
+    type Effect =
+            |"bold"
+            | "italic"
+            | "underline"
+            | "color"
+            | "fontSize"
+            | "Strike";
 
-      {/* Italic */}
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => applyStyle("italic")}
-        className="px-2 py-1 rounded hover:bg-gray-200 italic"
-      >
-        I
-      </button>
+    const myTools : Tools = {
+        tools:[
+            {
+                name: "Bold",
+                symbol: "B",
+                style:"font-bold",
+                effect:"bold"
+            },
+            {
+                name: "Italic",
+                symbol: "I",
+                style: "italic",
+                effect:"italic"
+            },
+            {
+                name: "Underline",
+                symbol: "U",
+                style: "underline",
+                effect:"underline"    
+            },
+            {
+                name: "Strike",
+                symbol: "S",
+                effect:"Strike"
+            }
+        ]
+    }
 
-      {/* Underline */}
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => applyStyle("underline")}
-        className="px-2 py-1 rounded hover:bg-gray-200 underline"
-      >
-        U
-      </button>
+    const ApplyEffect = (effect?: Effect) => {
+  if (!effect) return;
 
-      {/* Strike */}
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => applyStyle("strikeThrough")}
-        className="px-2 py-1 rounded hover:bg-gray-200"
-      >
-        S
-      </button>
-    </div>
-  );
+  switch (effect) {
+    case "bold":
+      applyEffect({ fontWeight: "bold" });
+      break;
+
+    case "italic":
+      applyEffect({ fontStyle: "italic" });
+      break;
+
+    case "underline":
+      applyEffect({ textDecoration: "underline" });
+      break;
+
+    case "color":
+      applyEffect({ color: "#ef4444" });
+      break;
+
+    case "fontSize":
+      applyEffect({ fontSize: "20px" });
+      break;
+  }
 };
 
+    const applyEffect=(style: Partial<CSSStyleDeclaration>)=>{
+        const selection = window.getSelection();
+        if(!selection || selection.rangeCount == 0) return;
+
+        const range = selection.getRangeAt(0);
+        if(range.collapsed) return;
+        
+        const span = document.createElement("span");
+        Object.assign(span.style, style);
+
+        const content = range.extractContents();
+        span.appendChild(content);
+        range.insertNode(span);
+
+        selection.removeAllRanges();
+        selection.selectAllChildren(span);
+    }
+    return (
+        <div className="mx-5 my-2 p-2 bg-gray-toolkit shadow-sm rounded-full flex justify-center">
+            { myTools.tools.map((tool)=>(
+                <button
+                    onClick={()=> ApplyEffect(tool.effect)} 
+                    className={`px-2 py-1 rounded hover:bg-gray-200 ${tool.style}`}>
+                    {tool.symbol}
+                </button>
+            ))}
+        </div>
+    )
+}
 
 const BlogCanvas =({contentFromDB} : {contentFromDB:string})=>{
 
