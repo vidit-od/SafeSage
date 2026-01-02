@@ -241,8 +241,13 @@ function restoreCaret(
   const range = document.createRange();
   const selection = window.getSelection();
   if (!selection) return;
+  
+  const textNode = el.childNodes[0];
+  if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+  const textLength = textNode.textContent?.length ?? 0;
+  const safeOffset = Math.min(offset, textLength);
 
-  range.setStart(el.firstChild, offset);
+  range.setStart(textNode, safeOffset);
   range.collapse(true);
 
   selection.removeAllRanges();
@@ -346,36 +351,74 @@ function updateChar(
 
             return {doc : newDoc, cursor: newCursor};
         }
-        else if( offset == 0 && childIndex == 0){
-
+        else if( offset == 0 && childIndex == 0 && blockIndex > 0){
+            
+            const prevChildLen = doc.blocks[blockIndex-1].children.length-1;
+            const prevTextLen = doc.blocks[blockIndex-1].children[prevChildLen].text.length;  
+            const newCursor : Cursor = {
+                blockIndex : blockIndex - 1,
+                childIndex : prevChildLen,
+                offset : prevTextLen,
+            }
+            return {doc, cursor:newCursor}
         }
         else if( offset == 0 && childIndex == 0 && blockIndex == 0){
-            console.log("Do nothing");
+            return {doc,cursor};
         }
     }
-    
-    const updatedNode = {
-        ...node,
-        text:
-        node.text.slice(0, offset) +
-        e.data +
-        node.text.slice(offset)
-    };
-    const newChildren = [...block.children];
-    newChildren[childIndex] = updatedNode;
-    const newDoc: DocumentModle = {
-      blocks: doc.blocks.map((b, i) =>
-        i === blockIndex ? { ...b, children: newChildren } : b
-      )
-    };
+    else if(e.inputType === 'insertParagraph'){
+        
+        const newBlock : BlockNode = {
+            type : "paragraph",
+            children:[
+                {text: " ", marks : { bold : false}}
+            ]
+        }
+        const newBlocks : BlockNode[] = [
+            ...doc.blocks.slice(0, blockIndex + 1),
+            newBlock,
+            ...doc.blocks.slice(blockIndex + 1)
+        ];
+
+        const newDoc: DocumentModle = {
+            blocks: newBlocks
+        }
+
+        const newCursor : Cursor = {
+            blockIndex :blockIndex + 1,
+            childIndex : 0,
+            offset : 0,
+        }
+        console.log(newDoc, newCursor);
+        return {doc: newDoc, cursor: newCursor};
+        
+    }
+    else if(e.data != null){
+        console.log(e.data);
+        const updatedNode = {
+            ...node,
+            text:
+            node.text.slice(0, offset) +
+            e.data +
+            node.text.slice(offset)
+        };
+        const newChildren = [...block.children];
+        newChildren[childIndex] = updatedNode;
+        const newDoc: DocumentModle = {
+          blocks: doc.blocks.map((b, i) =>
+            i === blockIndex ? { ...b, children: newChildren } : b
+          )
+        };
    
-    const newCursor: Cursor = {
-      blockIndex,
-      childIndex,
-      offset: offset + 1
-    };
-   
-    return { doc: newDoc, cursor: newCursor };
+        const newCursor: Cursor = {
+            blockIndex,
+            childIndex,
+            offset: offset + 1
+        };
+        return { doc: newDoc, cursor: newCursor };
+    }
+
+    return {doc,cursor};
 }
 
 const BlogCanvas = () => {
@@ -396,7 +439,6 @@ const BlogCanvas = () => {
     offset: 6        // end of " world"
     });
     const editorRef = useRef<HTMLDivElement | null>(null);
-
     useLayoutEffect(() => {
         if (editorRef.current) {
             restoreCaret(editorRef.current, cursor);
@@ -443,7 +485,7 @@ const BlogCanvas = () => {
         suppressContentEditableWarning
         onMouseUp={handleSelectionChange}
         onKeyUp={handleSelectionChange}
-        className="w-full h-full p-2 rounded-md outline-none cursor-text bg-white shadow-md"
+        className=" whitespace-pre-wrap w-full h-full p-2 rounded-md outline-none cursor-text bg-white shadow-md"
       >
         {doc.blocks.map(renderBlock)}
       </div>
