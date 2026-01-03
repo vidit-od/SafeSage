@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { useratom } from "../store/atom/useratom";
 import { Logo } from "../components/navbar";
+import { GuestLinks } from "../components/navbar";
 const API = import.meta.env.VITE_API_BASE_URL;
 
 type TextNode = {
@@ -65,8 +66,6 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     const publishbutton = useRef<HTMLButtonElement>(null);
     const loader = useRef<HTMLDivElement>(null);
     const name = useRef<HTMLDivElement>(null);
-    if( !user || !user.name ) return ( <></>)
-
     useEffect(()=>{
         if( !state ){
             if( publishbutton.current) publishbutton.current.disabled = true;
@@ -83,13 +82,14 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     return(
         <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
         <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
-        <button className="mx-4 transition-all duration-200 bg-black px-2 md:px-2 md:py-1 rounded-full text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center" ref={publishbutton} onClick={()=>publishblog()}>
+        {user && user.name && <button className="mx-4 transition-all duration-200 bg-black px-2 md:px-2 md:py-1 rounded-full text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center" ref={publishbutton} onClick={()=>publishblog()}>
             <div className="transition-all duration-100 translate-x-5" ref={name}>
                 Publish
             </div>
             <div className="w-5 h-5 rounded-full ml-4 border-4 border-gray-500 border-l-green-500 animate-rotate right-12 pointer-events-none opacity-0" ref={loader}></div>
-        </button>
-        <button className="w-9 h-9 flex justify-center items-center border-2 border-black bg-black text-white border-solid rounded-full">{user.name[0].toString().toUpperCase()}</button>
+        </button>}
+        {user && user.name && <button className="w-9 h-9 flex justify-center items-center border-2 border-black bg-black text-white border-solid rounded-full">{user.name[0].toString().toUpperCase()}</button>}
+        {!user.name && <GuestLinks/>}
     </div>
     )
 }
@@ -299,9 +299,10 @@ function updateChar(
     const node = block.children[childIndex];
     
     if(e.inputType === 'deleteContentBackward'){
-        if(blockIndex == 0 && childIndex == 0 && offset == 0) return {doc, cursor};
-
-        if(offset > 0){
+        if(blockIndex == 0 && childIndex == 0 && offset == 0){ 
+            return {doc, cursor};
+        }
+        else if(offset > 0){
             const updateNode = {
                 ... node,
                 text : 
@@ -352,49 +353,92 @@ function updateChar(
             return {doc : newDoc, cursor: newCursor};
         }
         else if( offset == 0 && childIndex == 0 && blockIndex > 0){
+            const prevBlock = doc.blocks[blockIndex - 1];
+            const newChildIndex = prevBlock.children.length - 1;
+            const newOffset = prevBlock.children[newChildIndex].text.length
+
+            const currBlock = doc.blocks[blockIndex];
             
-            const prevChildLen = doc.blocks[blockIndex-1].children.length-1;
-            const prevTextLen = doc.blocks[blockIndex-1].children[prevChildLen].text.length;  
-            const newCursor : Cursor = {
-                blockIndex : blockIndex - 1,
-                childIndex : prevChildLen,
-                offset : prevTextLen,
+            const mergedChildren : TextNode[] = [
+                ...prevBlock.children,
+                ...currBlock.children
+            ];
+            
+            const newPrevBlock :BlockNode = {
+                ...prevBlock,
+                children: mergedChildren
+            };
+
+            const newBlocks: BlockNode[] = [
+                ...doc.blocks.slice(0, blockIndex -1),
+                newPrevBlock,
+                ...doc.blocks.slice(blockIndex+1)
+            ]
+
+            const newDoc : DocumentModle = {
+                blocks: newBlocks
             }
-            return {doc, cursor:newCursor}
-        }
-        else if( offset == 0 && childIndex == 0 && blockIndex == 0){
-            return {doc,cursor};
+
+            const newCursor: Cursor = {
+                blockIndex : blockIndex - 1,
+                childIndex: newChildIndex,
+                offset: newOffset
+            };
+            return {doc: newDoc, cursor: newCursor};
         }
     }
-    else if(e.inputType === 'insertParagraph'){
-        
-        const newBlock : BlockNode = {
-            type : "paragraph",
-            children:[
-                {text: " ", marks : { bold : false}}
-            ]
-        }
-        const newBlocks : BlockNode[] = [
-            ...doc.blocks.slice(0, blockIndex + 1),
-            newBlock,
-            ...doc.blocks.slice(blockIndex + 1)
-        ];
+    else if (e.inputType === "insertParagraph") {
 
-        const newDoc: DocumentModle = {
-            blocks: newBlocks
-        }
+        const leftText = node.text.slice(0, offset);
+        const rightText = node.text.slice(offset);
 
-        const newCursor : Cursor = {
-            blockIndex :blockIndex + 1,
-            childIndex : 0,
-            offset : 0,
-        }
-        console.log(newDoc, newCursor);
-        return {doc: newDoc, cursor: newCursor};
-        
+            const beforeChildren = block.children.slice(0, childIndex);
+            const afterChildren = block.children.slice(childIndex + 1);
+
+            const updatedPrevChildren: TextNode[] = [
+                ...beforeChildren,
+                ...(leftText.length > 0
+                    ? [{ ...node, text: leftText }]
+                    : [{ ...node, text: " "}])
+            ];
+
+            const updatedPrevBlock: BlockNode = {
+                ...block,
+                children: updatedPrevChildren
+            };
+
+            const newChildren: TextNode[] = [
+                ...(rightText.length > 0
+                    ? [{ ...node, text: rightText }]
+                    : []),
+                ...afterChildren
+            ];
+
+            const newBlock: BlockNode = {
+                type: "paragraph",
+                children: newChildren.length > 0
+                    ? newChildren
+                    : [{ text: " ", marks: { bold: false } }]
+            };
+
+            const newBlocks: BlockNode[] = [
+                ...doc.blocks.slice(0, blockIndex),
+                updatedPrevBlock,
+                newBlock,
+                ...doc.blocks.slice(blockIndex + 1)
+            ];
+
+            const newDoc: DocumentModle = { blocks: newBlocks };
+
+            const newCursor: Cursor = {
+                blockIndex: blockIndex + 1,
+                childIndex: 0,
+            offset: 0
+        };
+
+        return { doc: newDoc, cursor: newCursor };
     }
     else if(e.data != null){
-        console.log(e.data);
         const updatedNode = {
             ...node,
             text:
@@ -441,6 +485,8 @@ const BlogCanvas = () => {
     const editorRef = useRef<HTMLDivElement | null>(null);
     useLayoutEffect(() => {
         if (editorRef.current) {
+            const sel = window.getSelection();
+            if (sel && !sel.isCollapsed) return;
             restoreCaret(editorRef.current, cursor);
         }
     }, [doc, cursor]);
