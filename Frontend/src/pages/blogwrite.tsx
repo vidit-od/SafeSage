@@ -6,6 +6,7 @@ import { useRecoilValue } from "recoil";
 import { useratom } from "../store/atom/useratom";
 import { Logo } from "../components/navbar";
 import { GuestLinks } from "../components/navbar";
+import { block } from "marked";
 const API = import.meta.env.VITE_API_BASE_URL;
 
 type TextNode = {
@@ -465,6 +466,170 @@ function updateChar(
     return {doc,cursor};
 }
 
+function deleteSelection(
+    doc: DocumentModle,
+    startCursor: Cursor,
+    endCursor: Cursor,
+):{doc: DocumentModle, cursor: Cursor}{
+
+    // within same child node
+    if(startCursor.blockIndex === endCursor.blockIndex && startCursor.childIndex === endCursor.childIndex){
+        const blockIndex = startCursor.blockIndex;
+        const childIndex = startCursor.childIndex;
+
+        const block = doc.blocks[blockIndex]; 
+        const node = block.children[childIndex];
+
+        const newContent = node.text.slice(0,startCursor.offset) + node.text.slice(endCursor.offset);
+        const updatedNode : TextNode = {
+            ...node,
+            text: newContent
+        };
+
+        const newChildren = [...block.children];
+        newChildren[childIndex] = updatedNode;
+
+        const newBlock: BlockNode = {
+            ...block,
+            children: newChildren.filter(n=> n.text.length > 0)
+        };
+
+        const newDoc : DocumentModle = {
+            blocks : doc.blocks.map((b,i) =>
+                i === blockIndex ? newBlock : b
+            )
+        };
+
+        return { doc: newDoc, cursor: startCursor}
+    }
+    // within same block
+    else if(startCursor.blockIndex === endCursor.blockIndex){
+        const blockIndex = startCursor.blockIndex;
+        const block = doc.blocks[blockIndex];
+
+        const prevNode = block.children[startCursor.childIndex];
+        const nextNode = block.children[endCursor.childIndex];
+
+        const updatedPrevNode : TextNode = {
+            ...prevNode,
+            text : prevNode.text.slice(0, startCursor.offset)
+        }
+
+        const updatedNextNode : TextNode = {
+            ...nextNode,
+            text : nextNode.text.slice(endCursor.offset)
+        }
+
+        const beforeChildren = block.children.slice(0, startCursor.childIndex);
+        const afterChildren = block.children.slice(endCursor.childIndex + 1);
+
+        const middleChildren: TextNode[] = [
+            ...(updatedPrevNode.text.length > 0 ? [updatedPrevNode] : []),
+            ...(updatedNextNode.text.length > 0 ? [updatedNextNode] : [])
+        ];
+
+        const newChildren: TextNode[] = [
+            ...beforeChildren,
+            ...middleChildren,
+            ...afterChildren
+        ];
+        if(newChildren.length === 0){
+            newChildren.push({
+                text: " ",
+                marks:{bold: false}
+            })
+        }
+        const newBlock: BlockNode = {
+            ...block,
+            children: newChildren
+       };
+
+        const newDoc: DocumentModle = {
+            blocks: doc.blocks.map((b, i) =>
+                i === blockIndex ? newBlock : b
+            )
+        };
+
+        const newCursor: Cursor = {
+            blockIndex,
+            childIndex: beforeChildren.length,
+            offset: updatedPrevNode.text.length
+        };
+
+        return { doc: newDoc, cursor: newCursor };
+    }
+    // across multiple blocks
+    else if (startCursor.blockIndex !== endCursor.blockIndex) {
+        const startBlock = doc.blocks[startCursor.blockIndex];
+        const endBlock = doc.blocks[endCursor.blockIndex];
+
+        const newStartChildren: TextNode[] = [];
+
+        startBlock.children.forEach((child, index) => {
+            if (index < startCursor.childIndex) {
+                newStartChildren.push(child);
+            } else if (index === startCursor.childIndex) {
+                const newText = child.text.slice(0, startCursor.offset);
+                if (newText.length > 0) {
+                    newStartChildren.push({
+                        ...child,
+                        text: newText
+                    });
+                }
+            }
+        });
+
+        endBlock.children.forEach((child, index) => {
+            if (index === endCursor.childIndex) {
+                const newText = child.text.slice(endCursor.offset);
+                if (newText.length > 0) {
+                    newStartChildren.push({
+                        ...child,
+                        text: newText
+                    });
+                }
+            } else if (index > endCursor.childIndex) {
+                newStartChildren.push(child);
+            }
+        });
+        
+        if (newStartChildren.length === 0) {
+            newStartChildren.push({
+                text: " ",
+                marks: { bold: false }
+            });
+        }
+        const newStartBlock: BlockNode = {
+            ...startBlock,
+            children: newStartChildren
+        };
+
+
+        const newBlocks: BlockNode[] = [
+            ...doc.blocks.slice(0, startCursor.blockIndex),
+            newStartBlock,
+            ...doc.blocks.slice(endCursor.blockIndex + 1)
+        ];
+
+        const newDoc: DocumentModle = {
+            blocks: newBlocks
+        };
+
+        const lastChildIndex = newStartChildren.length - 1;
+        const lastChild = newStartChildren[lastChildIndex];
+
+        const newCursor: Cursor = {
+            blockIndex: startCursor.blockIndex,
+            childIndex: lastChildIndex,
+            offset: lastChild.text.length
+        };
+
+        return { doc: newDoc, cursor: newCursor };
+    }
+   
+    return {doc, cursor: startCursor};
+}
+
 const BlogCanvas = () => {
     const [doc, setDoc] = useState<DocumentModle>({
     blocks: [
@@ -507,7 +672,25 @@ const BlogCanvas = () => {
         const handler = (e: InputEvent)=>{
             e.preventDefault();
             if(e.inputType === null) return;
+            
+            
+            const sel = window.getSelection();
+            if (sel && !sel.isCollapsed){
+                const startCursor = getCursorFromDOM(editorRef.current!);
+                
+                // Temporarily collapse selection to get end
+                sel.collapseToEnd();
+                const endCursor = getCursorFromDOM(editorRef.current!);
+                
+                if (!startCursor || !endCursor) return { doc, cursor };
+                console.log("Range : ",startCursor , endCursor);
+                setDoc(prevDoc =>{
+                    const result = deleteSelection(prevDoc,startCursor,endCursor);
+                    return result.doc;
+                });
 
+                if(e.inputType === 'deleteContentBackward') return;
+            }
             setDoc(prevDoc =>{
                 const result = updateChar(prevDoc, cursor, e);
                 setCursor(result.cursor);
