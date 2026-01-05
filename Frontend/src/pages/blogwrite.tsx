@@ -26,15 +26,253 @@ type DocumentModle = {
     blocks : BlockNode[];
 }
 
+interface Tool {
+    name : String,
+    symbol? : String,
+    style? : String,
+    effect: Effect,
+}
+interface Tools{
+    tools : Tool[]
+}
+type Effect =
+        |"bold"
+        | "italic"
+        | "underline"
+        | "color"
+        | "fontSize"
+        | "Strike";
+const myTools : Tools = {
+    tools:[
+        {
+            name: "Bold",
+            symbol: "B",
+            style:"font-bold",
+            effect:"bold"
+        },
+        {
+            name: "Italic",
+            symbol: "I",
+            style: "italic",
+            effect:"italic"
+        },
+        {
+            name: "Underline",
+            symbol: "U",
+            style: "underline",
+            effect:"underline"    
+        },
+        {
+            name: "Strike",
+            symbol: "S",
+            effect:"Strike"
+        }
+    ]
+}
+type ToolKitProps = {
+  applyEffect: (effect: Effect, startCursor : Cursor, endCursor: Cursor) => void;
+  editorRef: React.RefObject<HTMLDivElement>; 
+};
+type BlogCanvasProps = {
+  editorRef: React.RefObject<HTMLDivElement>;
+  doc: DocumentModle,
+  setDoc : React.Dispatch<React.SetStateAction<DocumentModle>>,
+  cursor: Cursor,
+  setCursor: React.Dispatch<React.SetStateAction<Cursor>>
+};
+
+
+function countLeadingSpaces(text: string) {
+  let i = 0;
+  while (i < text.length && text[i] === " ") i++;
+  return i;
+}
+
+function countTrailingSpaces(text: string) {
+  let i = text.length - 1;
+  while (i >= 0 && text[i] === " ") i--;
+  return text.length - 1 - i;
+}
+
+function splitAndToggleBold(
+  child: TextNode,
+  startOffset: number,
+  endOffset: number
+): TextNode[] {
+  const { text, marks } = child;
+
+  const beforeText = text.slice(0, startOffset);
+  const selectedText = text.slice(startOffset, endOffset);
+  const afterText = text.slice(endOffset);
+
+  const baseMarks = { ...marks };
+  const toggledMarks = {
+    ...marks,
+    bold: !marks?.bold,
+  };
+
+  const nodes: TextNode[] = [];
+
+  if (beforeText.length > 0) {
+    nodes.push({
+      text: beforeText,
+      marks: baseMarks,
+    });
+  }
+
+  if (selectedText.length > 0) {
+    nodes.push({
+      text: selectedText,
+      marks: toggledMarks,
+    });
+  }
+
+  if (afterText.length > 0) {
+    nodes.push({
+      text: afterText,
+      marks: baseMarks,
+    });
+  }
+
+  return nodes;
+}
+
 
 export function BlogWrite(){
     const [title,setTitle] = useState('');
+    const editorRef = useRef<HTMLDivElement | null>(null);
+    const [doc, setDoc] = useState<DocumentModle>({
+        blocks: [{
+            type: "paragraph",
+            children: [
+              { text: "Hello", marks: { bold: true } },
+              { text: " world", marks: { bold: false} }
+            ]}
+        ]
+        }
+    );
+    const [cursor, setCursor] = useState<Cursor>({
+        blockIndex: 0,
+        childIndex: 1,   // " world"
+        offset: 6        // end of " world"
+    });
     
+    function applyEffect(effect: Effect, startCursor : Cursor, endCursor: Cursor) {
+        if (!editorRef.current) return;
+
+        console.log("Range : ",startCursor , endCursor);
+
+        // within block split
+        if(startCursor.blockIndex === endCursor.blockIndex && startCursor.childIndex === endCursor.childIndex){
+            const startText = doc.blocks[startCursor.blockIndex].children[startCursor.childIndex].text;
+            const endText = doc.blocks[endCursor.blockIndex].children[endCursor.childIndex].text;
+
+            const startShift = countLeadingSpaces(startText);
+            const endShift = countTrailingSpaces(endText);
+
+            const startIsEmpty = startCursor.offset === 0 || startCursor.offset <= startShift;
+            const endIsEmpty = endCursor.offset === endText.length || endCursor.offset >= endText.length - endShift;
+                
+            if (startIsEmpty && endIsEmpty) {
+                setDoc(prevDoc => {
+                    const newBlocks = prevDoc.blocks.map((block, bIndex) => {
+                    if (bIndex !== startCursor.blockIndex) return block;
+                    
+                    return {
+                        ...block,
+                        children: block.children.map((c, cIndex) => {
+                        if (cIndex !== startCursor.childIndex) return c;
+                            return {
+                            ...c,
+                            marks: {
+                                ...c.marks,
+                                bold: !c.marks?.bold,
+                            },
+                        };
+                        }),
+                    };
+                    });
+                
+                return {
+                    ...prevDoc,
+                    blocks: newBlocks,
+                };
+                });
+          
+                return;
+            }
+
+            setDoc(prevDoc => {
+              const { blockIndex, childIndex } = startCursor;
+              const block = prevDoc.blocks[blockIndex];
+              const child = block.children[childIndex];
+                                
+              const newChildren = [
+                ...block.children.slice(0, childIndex),
+                ...splitAndToggleBold(
+                  child,
+                  startCursor.offset,
+                  endCursor.offset
+                ),
+                ...block.children.slice(childIndex + 1),
+              ];
+            
+              const newBlocks = prevDoc.blocks.map((b, i) =>
+                i === blockIndex
+                  ? { ...b, children: newChildren }
+                  : b
+              );
+            
+              return {
+                ...prevDoc,
+                blocks: newBlocks,
+              };
+            });
+
+            return;
+        }
+            // for all other case recursively break and applyEffect till we reach 
+        else if(startCursor.blockIndex === endCursor.blockIndex && startCursor.childIndex != endCursor.childIndex){
+            const blockIndex = startCursor.blockIndex;
+            const block = doc.blocks[blockIndex];
+
+            applyEffect(effect,startCursor,{
+                blockIndex,
+                childIndex: startCursor.childIndex,
+                offset: block.children[blockIndex].text.length
+            })
+
+            for(let i = startCursor.childIndex + 1; i < endCursor.childIndex; i++){
+                applyEffect(effect, 
+                    {
+                        blockIndex,
+                        childIndex: i,
+                        offset : 0
+                    },{
+                        blockIndex,
+                        childIndex: i,
+                        offset: block.children[i].text.length
+                    })
+            }
+
+            applyEffect(effect, {
+                blockIndex,
+                childIndex: endCursor.childIndex,
+                offset: 0
+            }, endCursor);
+        }    
+    }
     return(
         <div className="h-screen flex flex-col bg-[#f9fbf8]">
             <BlogWriteNavbar title={title} state={(title.length < 5)? false : true} setTitle={setTitle} />
-            <ToolKit/>
-            <BlogCanvas/>
+            <ToolKit applyEffect = {applyEffect} editorRef={editorRef} />
+            <BlogCanvas
+              editorRef={editorRef}
+              doc={doc}
+              setDoc={setDoc}
+              cursor={cursor}
+              setCursor={setCursor}
+            />
         </div>
     )
 }
@@ -95,102 +333,24 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     )
 }
 
-const ToolKit = ()=>{
+const ToolKit = ({applyEffect, editorRef}: ToolKitProps)=>{
 
-    interface Tool {
-        name : String,
-        symbol? : String,
-        style? : String,
-        effect: Effect,
-    }
-    interface Tools{
-        tools : Tool[]
-    }
-    type Effect =
-            |"bold"
-            | "italic"
-            | "underline"
-            | "color"
-            | "fontSize"
-            | "Strike";
-
-    const myTools : Tools = {
-        tools:[
-            {
-                name: "Bold",
-                symbol: "B",
-                style:"font-bold",
-                effect:"bold"
-            },
-            {
-                name: "Italic",
-                symbol: "I",
-                style: "italic",
-                effect:"italic"
-            },
-            {
-                name: "Underline",
-                symbol: "U",
-                style: "underline",
-                effect:"underline"    
-            },
-            {
-                name: "Strike",
-                symbol: "S",
-                effect:"Strike"
-            }
-        ]
-    }
-
-    const ApplyEffect = (effect?: Effect) => {
-  if (!effect) return;
-
-  switch (effect) {
-    case "bold":
-      applyEffect({ fontWeight: "bold" });
-      break;
-
-    case "italic":
-      applyEffect({ fontStyle: "italic" });
-      break;
-
-    case "underline":
-      applyEffect({ textDecoration: "underline" });
-      break;
-
-    case "color":
-      applyEffect({ color: "#ef4444" });
-      break;
-
-    case "fontSize":
-      applyEffect({ fontSize: "20px" });
-      break;
-  }
-};
-
-    const applyEffect=(style: Partial<CSSStyleDeclaration>)=>{
-        const selection = window.getSelection();
-        if(!selection || selection.rangeCount == 0) return;
-
-        const range = selection.getRangeAt(0);
-        if(range.collapsed) return;
-        
-        const span = document.createElement("span");
-        Object.assign(span.style, style);
-
-        const content = range.extractContents();
-        span.appendChild(content);
-        range.insertNode(span);
-
-        selection.removeAllRanges();
-        selection.selectAllChildren(span);
-    }
     return (
         <div className="mx-5 my-2 p-2 bg-gray-toolkit shadow-sm rounded-full flex justify-center">
             { myTools.tools.map((tool, index)=>(
                 <button
                     key={index}
-                    onClick={()=> ApplyEffect(tool.effect)} 
+                    onClick={()=> {
+                        const sel = window.getSelection();
+                        if (sel && !sel.isCollapsed){
+                            const startCursor = getCursorFromDOM(editorRef.current!);
+                            sel.collapseToEnd();
+                            const endCursor = getCursorFromDOM(editorRef.current!);
+                            if(!startCursor || !endCursor) return;
+
+                            applyEffect(tool.effect,startCursor,endCursor);
+                        }
+                    }} 
                     className={`px-2 py-1 rounded hover:bg-gray-200 ${tool.style}`}>
                     {tool.symbol}
                 </button>
@@ -630,24 +790,8 @@ function deleteSelection(
     return {doc, cursor: startCursor};
 }
 
-const BlogCanvas = () => {
-    const [doc, setDoc] = useState<DocumentModle>({
-    blocks: [
-      {
-        type: "paragraph",
-        children: [
-          { text: "Hello", marks: { bold: true } },
-          { text: " world", marks: { bold: false} }
-        ]
-      }
-    ]
-    });
-    const [cursor, setCursor] = useState<Cursor>({
-    blockIndex: 0,
-    childIndex: 1,   // " world"
-    offset: 6        // end of " world"
-    });
-    const editorRef = useRef<HTMLDivElement | null>(null);
+const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor} : BlogCanvasProps) => {
+    
     useLayoutEffect(() => {
         if (editorRef.current) {
             const sel = window.getSelection();
