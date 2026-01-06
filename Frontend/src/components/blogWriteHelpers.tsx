@@ -1,4 +1,4 @@
-import {BlockNode,TextNode,Cursor} from "./blogWriteTypes"
+import {DocumentModle,BlockNode,TextNode,Cursor, Effect} from "./blogWriteTypes"
 
 export function countLeadingSpaces(text: string) {
   let i = 0;
@@ -13,7 +13,8 @@ export function countTrailingSpaces(text: string) {
 }
 
 
-export function splitAndToggleBold(
+export function splitAndapplyEffect(
+  effect : Effect,
   child: TextNode,
   startOffset: number,
   endOffset: number
@@ -27,7 +28,7 @@ export function splitAndToggleBold(
   const baseMarks = { ...marks };
   const toggledMarks = {
     ...marks,
-    bold: !marks?.bold,
+    [effect]: !marks?.[effect],
   };
 
   const nodes: TextNode[] = [];
@@ -56,21 +57,73 @@ export function splitAndToggleBold(
   return nodes;
 }
 
+
+export const EFFECT_RENDER_MAP: Record<
+  Effect,
+  {
+    className?: string;
+    style?: (value: any) => React.CSSProperties;
+  }
+> = {
+  bold: {
+    className: "font-bold",
+  },
+  italic: {
+    className: "italic",
+  },
+  underline: {
+    className: "underline",
+  },
+  strike: {
+    className: "line-through",
+  },
+  /*color: {
+    style: (value) => ({ color: value }),
+  },
+  fontSize: {
+    style: (value) => ({ fontSize: value }),
+  },*/
+};
+
 export function renderTextNode(
   node: TextNode,
   blockIndex: number,
   childIndex: number
 ) {
-  const Tag = node.marks.bold ? "strong" : "span";
+  const marks = node.marks ?? {};
+
+  const classNames: string[] = [];
+  let inlineStyle: React.CSSProperties = {};
+
+  for (const effect in marks) {
+    const value = marks[effect as Effect];
+    if (!value) continue;
+
+    const renderer = EFFECT_RENDER_MAP[effect as Effect];
+    if (!renderer) continue;
+
+    if (renderer.className) {
+      classNames.push(renderer.className);
+    }
+
+    if (renderer.style) {
+      inlineStyle = {
+        ...inlineStyle,
+        ...renderer.style(value),
+      };
+    }
+  }
 
   return (
-    <Tag
+    <span
       key={childIndex}
       data-block-index={blockIndex}
       data-child-index={childIndex}
+      className={classNames.join(" ")}
+      style={inlineStyle}
     >
       {node.text}
-    </Tag>
+    </span>
   );
 }
 
@@ -112,7 +165,6 @@ export function restoreCaret(
   selection.addRange(range);
 }
 
-
 export function getCursorFromDOM(
   _root: HTMLElement
 ): Cursor | null {
@@ -139,4 +191,73 @@ export function getCursorFromDOM(
     childIndex: Number(childIndex),
     offset
   };
+}
+
+export function getCursorFromDOMPosition(
+  node: Node,
+  offset: number,
+  editor: HTMLElement
+): Cursor | null {
+  if (!(node instanceof Text)) return null;
+
+  const parent = node.parentElement;
+  if (!parent) return null;
+
+  const blockIndex = Number(parent.dataset.blockIndex);
+  const childIndex = Number(parent.dataset.childIndex);
+
+  if (Number.isNaN(blockIndex) || Number.isNaN(childIndex)) return null;
+
+  return {
+    blockIndex,
+    childIndex,
+    offset,
+  };
+}
+
+
+
+export function getActiveMarksInSelection(
+  doc: DocumentModle,
+  start: Cursor,
+  end: Cursor
+): Partial<Record<Effect, boolean>> {
+  const activeMarks: Partial<Record<Effect, boolean>> = {};
+  let first = true;
+
+  for (let b = start.blockIndex; b <= end.blockIndex; b++) {
+    const block = doc.blocks[b];
+    if (!block) continue;
+
+    const startChild =
+      b === start.blockIndex ? start.childIndex : 0;
+    const endChild =
+      b === end.blockIndex
+        ? end.childIndex
+        : block.children.length - 1;
+
+    for (let c = startChild; c <= endChild; c++) {
+      const node = block.children[c];
+      if (!node) continue;
+
+      const marks = node.marks ?? {};
+
+      if (first) {
+        // initialize with first node
+        for (const key in marks) {
+          activeMarks[key as Effect] = Boolean(marks[key as Effect]);
+        }
+        first = false;
+      } else {
+        // intersect marks
+        for (const key in activeMarks) {
+          if (!marks[key as Effect]) {
+            activeMarks[key as Effect] = false;
+          }
+        }
+      }
+    }
+  }
+
+  return activeMarks;
 }

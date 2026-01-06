@@ -1,7 +1,7 @@
 
 import { useEffect,useLayoutEffect } from "react";
 import {BlogCanvasProps} from "../components/blogWriteTypes"
-import { restoreCaret, renderBlock,getCursorFromDOM} from "../components/blogWriteHelpers"
+import { getActiveMarksInSelection,restoreCaret, renderBlock, getCursorFromDOMPosition} from "../components/blogWriteHelpers"
 import {DocumentModle,Cursor,TextNode,BlockNode} from "./blogWriteTypes"
 
 function updateChar(
@@ -134,7 +134,7 @@ function updateChar(
                 type: "paragraph",
                 children: newChildren.length > 0
                     ? newChildren
-                    : [{ text: " ", marks: { bold: false } }]
+                    : [{ text: " ", marks: {} }]
             };
 
             const newBlocks: BlockNode[] = [
@@ -251,7 +251,7 @@ function deleteSelection(
         if(newChildren.length === 0){
             newChildren.push({
                 text: " ",
-                marks:{bold: false}
+                marks:{}
             })
         }
         const newBlock: BlockNode = {
@@ -311,7 +311,7 @@ function deleteSelection(
         if (newStartChildren.length === 0) {
             newStartChildren.push({
                 text: " ",
-                marks: { bold: false }
+                marks: {}
             });
         }
         const newStartBlock: BlockNode = {
@@ -345,7 +345,7 @@ function deleteSelection(
     return {doc, cursor: startCursor};
 }
 
-export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor} : BlogCanvasProps) => {
+export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor,setToolButtons} : BlogCanvasProps) => {
     
     useLayoutEffect(() => {
         if (editorRef.current) {
@@ -355,14 +355,38 @@ export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor} : BlogCanvasP
         }
     }, [doc, cursor]);
 
-    function handleSelectionChange() {
-        if (!editorRef.current) return;
+    const handleSelectionChange = () => {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
 
-        const newCursor = getCursorFromDOM(editorRef.current);
-        if (!newCursor) return;
+  const range = sel.getRangeAt(0);
+  if (range.collapsed) return;
 
-        setCursor(newCursor);
-    }
+  const startCursor = getCursorFromDOMPosition(
+    range.startContainer,
+    range.startOffset,
+    editorRef.current!
+  );
+
+  const endCursor = getCursorFromDOMPosition(
+    range.endContainer,
+    range.endOffset,
+    editorRef.current!
+  );
+
+  if (!startCursor || !endCursor) return;
+
+  const activeMarks = getActiveMarksInSelection(
+    doc,
+    startCursor,
+    endCursor
+  );
+
+  setToolButtons(prev => ({
+    ...prev,
+    ...activeMarks,
+  }));
+};
 
     useEffect(()=>{
         const el = editorRef.current;
@@ -375,11 +399,20 @@ export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor} : BlogCanvasP
             
             const sel = window.getSelection();
             if (sel && !sel.isCollapsed){
-                const startCursor = getCursorFromDOM(editorRef.current!);
-                
-                // Temporarily collapse selection to get end
-                sel.collapseToEnd();
-                const endCursor = getCursorFromDOM(editorRef.current!);
+                 const range = sel.getRangeAt(0);
+                if (range.collapsed) return;
+
+                const startCursor = getCursorFromDOMPosition(
+                  range.startContainer,
+                  range.startOffset,
+                  editorRef.current!
+                );
+            
+                const endCursor = getCursorFromDOMPosition(
+                  range.endContainer,
+                  range.endOffset,
+                  editorRef.current!
+                );
                 
                 if (!startCursor || !endCursor) return { doc, cursor };
                 console.log("Range : ",startCursor , endCursor);

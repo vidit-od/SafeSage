@@ -6,8 +6,8 @@ import { Logo } from "../components/navbar";
 import { GuestLinks } from "../components/navbar";
 import { BlogCanvas } from "../components/blogWriteCanvas";
 import { ToolKit } from "../components/blogWriteToolkit";
-import { DocumentModle, Cursor,Effect} from "../components/blogWriteTypes"
-import {countLeadingSpaces, countTrailingSpaces, splitAndToggleBold} from "../components/blogWriteHelpers"
+import { ToolButtons,DocumentModle, Cursor,Effect} from "../components/blogWriteTypes"
+import { countLeadingSpaces, countTrailingSpaces, splitAndapplyEffect} from "../components/blogWriteHelpers"
 
 
 interface Blog{
@@ -84,6 +84,13 @@ export function BlogWrite(){
         childIndex: 1,   // " world"
         offset: 6        // end of " world"
     });
+    const [ToolButtons, setToolButtons] = useState<ToolButtons>({
+        bold : false,
+        italic : false,
+        underline : false,
+        strike : false,
+    });
+
     
     function applyEffect(effect: Effect, startCursor : Cursor, endCursor: Cursor) {
         if (!editorRef.current) return;
@@ -114,7 +121,7 @@ export function BlogWrite(){
                             ...c,
                             marks: {
                                 ...c.marks,
-                                bold: !c.marks?.bold,
+                                [effect]: !c.marks?.[effect],
                             },
                         };
                         }),
@@ -137,7 +144,8 @@ export function BlogWrite(){
                                 
               const newChildren = [
                 ...block.children.slice(0, childIndex),
-                ...splitAndToggleBold(
+                ...splitAndapplyEffect(
+                    effect,
                   child,
                   startCursor.offset,
                   endCursor.offset
@@ -193,13 +201,14 @@ export function BlogWrite(){
     return(
         <div className="h-screen flex flex-col bg-[#f9fbf8]">
             <BlogWriteNavbar title={title} state={(title.length < 5)? false : true} setTitle={setTitle} />
-            <ToolKit applyEffect = {applyEffect} editorRef={editorRef} />
+            <ToolKit applyEffect = {applyEffect} editorRef={editorRef} Toolbuttons = {ToolButtons} setToolButtons = {setToolButtons}/>
             <BlogCanvas
               editorRef={editorRef}
               doc={doc}
               setDoc={setDoc}
               cursor={cursor}
               setCursor={setCursor}
+              setToolButtons = {setToolButtons}
             />
         </div>
     )
