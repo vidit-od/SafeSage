@@ -34,7 +34,7 @@ const NavLinks:React.FC<{loc: string}> = ({loc})=>{
     )
 }
 
-const GuestLinks = ()=>{
+export const GuestLinks = ()=>{
     const navigate = useNavigate();
     return(
         <>
@@ -73,9 +73,8 @@ const LoggedLinks: React.FC<{loc:string}> = (loc)=>{
         <div className="opacity-0 pointer-events-none absolute md:opacity-100 md:pointer-events-auto md:relative flex justify-between items-center">
             <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={home} onClick={()=>navigate('/blog')}>Home</button>
             <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={stories} onClick={()=>navigate('/stories')}>Our Stories</button>
+            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>
             { !USER.name && <GuestLinks/>}
-            { USER && USER.name && 
-            <button className="mx-4 transition-all duration-75 hover:border-b-2 border-black" ref={writing} onClick={()=>navigate('/blog/write')}>Start Writing</button>}
             {USER && USER.name &&
             <div>
             <button
