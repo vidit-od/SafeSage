@@ -1,4 +1,4 @@
-import { getCursorFromDOM } from "./blogWriteHelpers";
+import { getCursorFromDOMPosition } from "./blogWriteHelpers";
 import {myTools,  ToolKitProps } from "./blogWriteTypes";
 
 export const ToolKit = ({
@@ -16,13 +16,25 @@ export const ToolKit = ({
             key={tool.effect}
             onClick={() => {
               const sel = window.getSelection();
-              if (!sel || sel.isCollapsed) return;
+              if (!sel || sel.rangeCount === 0) return;
 
-              const startCursor = getCursorFromDOM(editorRef.current!);
-              sel.collapseToEnd();
-              const endCursor = getCursorFromDOM(editorRef.current!);
+              const range = sel.getRangeAt(0);
+              if (range.collapsed) return;
+
+              const startCursor = getCursorFromDOMPosition(
+                range.startContainer,
+                range.startOffset,
+                editorRef.current!
+              );
+          
+              const endCursor = getCursorFromDOMPosition(
+                range.endContainer,
+                range.endOffset,
+                editorRef.current!
+              );
+          
               if (!startCursor || !endCursor) return;
-
+          
               applyEffect(tool.effect, startCursor, endCursor);
             }}
             className={`

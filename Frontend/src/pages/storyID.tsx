@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { MainNavbar } from "../components/navbar";
 import  {marked} from 'marked'
+import { renderBlock } from "../components/blogWriteHelpers";
+import { DocumentModle } from "../components/blogWriteTypes";
 marked.setOptions({
     gfm:true
 })
@@ -27,20 +29,15 @@ interface blog{
 export function Storyid(){
     const {id} = useParams();
     const [blog,setBlog] = useState<blog>();
-    const [content , setcontent] = useState<string>("");
+    const [content , setcontent] = useState<DocumentModle>({blocks: [{
+            type: "paragraph",
+            children: [
+              { text: "Error Loading the Blog !!", marks: { bold: true } },
+            ]}
+        ]});
     useEffect(()=>{
         loadblog();
     },[]);
-
-    const preprocess = async(data:string)=>{
-        const BRadd = data.replace(/\\n/g, ' \n ')
-        const heddings = await marked(BRadd);
-        const h3change = heddings.replace(/<h3>/g, '<div class= "text-lg font-semibold py-5 snap-start -translate-x-4">')
-        const h3change2 = h3change.replace(/<\/h3>/g, '</div>')
-        const h2change = h3change2.replace(/<h2>/g, '<div class= "underline text-xl font-bold py-5 snap-start -translate-x-4">')
-        const h2change2 = h2change.replace(/<\/h2>/g, '</div>')
-        return h2change2;
-    }
 
     const loadblog= async()=>{
         try{
@@ -50,9 +47,8 @@ export function Storyid(){
                 }
             });
             setBlog(response.data);
-            const parsed= response.data.content;
-            const temp = await preprocess(parsed)
-            setcontent(temp);
+            const LoadedContent:DocumentModle = JSON.parse(response.data.content);
+            setcontent(LoadedContent);
         }
         catch(e){
             console.log(e)
@@ -82,13 +78,15 @@ const TopContent:React.FC<{title:string}> = ({title})=>{
     )
 }
 
-const BottomContent:React.FC<{blog:blog, content:string}> = ({blog, content})=>{
+const BottomContent:React.FC<{blog:blog, content:DocumentModle}> = ({blog, content})=>{
     return(
         <div className="px-20 py-10 my-1 w-full snap-start">
             <div className="w-full border-b-2 "></div>
             <div className=""></div>
             <div className="flex font-space flex-wrap">
-                <div className=" w-full p-2  pl-10" dangerouslySetInnerHTML={{__html: content}}></div>
+                <div className=" whitespace-pre-wrap w-full p-2  pl-10">
+                    {content.blocks.map(renderBlock)}
+                </div>
             </div>
             <div className="w-full border-b-2 my-3"></div>
 

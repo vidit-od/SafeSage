@@ -1,7 +1,7 @@
 
 import { useEffect,useLayoutEffect } from "react";
 import {BlogCanvasProps} from "../components/blogWriteTypes"
-import { getActiveMarksInSelection,restoreCaret, renderBlock, getCursorFromDOMPosition} from "../components/blogWriteHelpers"
+import { restoreCaret, renderBlock,getCursorFromDOM,getCursorFromDOMPosition} from "../components/blogWriteHelpers"
 import {DocumentModle,Cursor,TextNode,BlockNode} from "./blogWriteTypes"
 
 function updateChar(
@@ -181,68 +181,78 @@ function updateChar(
     return {doc,cursor};
 }
 
+function normalizeChildren(children: TextNode[]): TextNode[] {
+  if (children.length === 0) {
+    return [{ text: " ", marks: {} }];
+  }
+  return children;
+}
+
+
 function deleteSelection(
     doc: DocumentModle,
     startCursor: Cursor,
     endCursor: Cursor,
 ):{doc: DocumentModle, cursor: Cursor}{
-
+    console.log("safsd")
     // within same child node
     if(startCursor.blockIndex === endCursor.blockIndex && startCursor.childIndex === endCursor.childIndex){
         const blockIndex = startCursor.blockIndex;
         const childIndex = startCursor.childIndex;
-
+        
         const block = doc.blocks[blockIndex]; 
         const node = block.children[childIndex];
-
+        
         const newContent = node.text.slice(0,startCursor.offset) + node.text.slice(endCursor.offset);
         const updatedNode : TextNode = {
             ...node,
             text: newContent
         };
-
+        
         const newChildren = [...block.children];
         newChildren[childIndex] = updatedNode;
-
+        
         const newBlock: BlockNode = {
             ...block,
-            children: newChildren.filter(n=> n.text.length > 0)
+            children: normalizeChildren(newChildren.filter(n=> n.text.length > 0))
         };
-
+        
         const newDoc : DocumentModle = {
             blocks : doc.blocks.map((b,i) =>
                 i === blockIndex ? newBlock : b
             )
         };
-
+    
+        console.log(1, newDoc);
         return { doc: newDoc, cursor: startCursor}
     }
     // within same block
     else if(startCursor.blockIndex === endCursor.blockIndex){
+        
         const blockIndex = startCursor.blockIndex;
         const block = doc.blocks[blockIndex];
-
+        
         const prevNode = block.children[startCursor.childIndex];
         const nextNode = block.children[endCursor.childIndex];
-
+        
         const updatedPrevNode : TextNode = {
             ...prevNode,
             text : prevNode.text.slice(0, startCursor.offset)
         }
-
+        
         const updatedNextNode : TextNode = {
             ...nextNode,
             text : nextNode.text.slice(endCursor.offset)
         }
-
+        
         const beforeChildren = block.children.slice(0, startCursor.childIndex);
         const afterChildren = block.children.slice(endCursor.childIndex + 1);
-
+        
         const middleChildren: TextNode[] = [
             ...(updatedPrevNode.text.length > 0 ? [updatedPrevNode] : []),
             ...(updatedNextNode.text.length > 0 ? [updatedNextNode] : [])
         ];
-
+        
         const newChildren: TextNode[] = [
             ...beforeChildren,
             ...middleChildren,
@@ -256,44 +266,45 @@ function deleteSelection(
         }
         const newBlock: BlockNode = {
             ...block,
-            children: newChildren
-       };
-
+            children: normalizeChildren(newChildren)
+        };
+        
         const newDoc: DocumentModle = {
             blocks: doc.blocks.map((b, i) =>
                 i === blockIndex ? newBlock : b
-            )
-        };
-
-        const newCursor: Cursor = {
-            blockIndex,
-            childIndex: beforeChildren.length,
-            offset: updatedPrevNode.text.length
-        };
-
-        return { doc: newDoc, cursor: newCursor };
-    }
-    // across multiple blocks
-    else if (startCursor.blockIndex !== endCursor.blockIndex) {
-        const startBlock = doc.blocks[startCursor.blockIndex];
-        const endBlock = doc.blocks[endCursor.blockIndex];
-
-        const newStartChildren: TextNode[] = [];
-
-        startBlock.children.forEach((child, index) => {
-            if (index < startCursor.childIndex) {
-                newStartChildren.push(child);
-            } else if (index === startCursor.childIndex) {
-                const newText = child.text.slice(0, startCursor.offset);
-                if (newText.length > 0) {
-                    newStartChildren.push({
-                        ...child,
-                        text: newText
-                    });
-                }
+        )
+    };
+    
+    const newCursor: Cursor = {
+        blockIndex,
+        childIndex: beforeChildren.length,
+        offset: updatedPrevNode.text.length
+    };
+    
+    console.log(2,newDoc);
+    return { doc: newDoc, cursor: newCursor };
+}
+// across multiple blocks
+else if (startCursor.blockIndex !== endCursor.blockIndex) {
+    const startBlock = doc.blocks[startCursor.blockIndex];
+    const endBlock = doc.blocks[endCursor.blockIndex];
+    
+    const newStartChildren: TextNode[] = [];
+    
+    startBlock.children.forEach((child, index) => {
+        if (index < startCursor.childIndex) {
+            newStartChildren.push(child);
+        } else if (index === startCursor.childIndex) {
+            const newText = child.text.slice(0, startCursor.offset);
+            if (newText.length > 0) {
+                newStartChildren.push({
+                    ...child,
+                    text: newText
+                });
             }
-        });
-
+        }
+    });
+    
         endBlock.children.forEach((child, index) => {
             if (index === endCursor.childIndex) {
                 const newText = child.text.slice(endCursor.offset);
@@ -318,34 +329,35 @@ function deleteSelection(
             ...startBlock,
             children: newStartChildren
         };
-
-
+        
+        
         const newBlocks: BlockNode[] = [
             ...doc.blocks.slice(0, startCursor.blockIndex),
             newStartBlock,
             ...doc.blocks.slice(endCursor.blockIndex + 1)
         ];
-
+        
         const newDoc: DocumentModle = {
             blocks: newBlocks
         };
-
+        
         const lastChildIndex = newStartChildren.length - 1;
         const lastChild = newStartChildren[lastChildIndex];
-
+        
         const newCursor: Cursor = {
             blockIndex: startCursor.blockIndex,
             childIndex: lastChildIndex,
             offset: lastChild.text.length
         };
-
+        
+        console.log(3,newDoc);
         return { doc: newDoc, cursor: newCursor };
     }
-   
+    
     return {doc, cursor: startCursor};
 }
 
-export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor,setToolButtons} : BlogCanvasProps) => {
+export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor} : BlogCanvasProps) => {
     
     useLayoutEffect(() => {
         if (editorRef.current) {
@@ -355,38 +367,14 @@ export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor,setToolButtons
         }
     }, [doc, cursor]);
 
-    const handleSelectionChange = () => {
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return;
+    function handleSelectionChange() {
+        if (!editorRef.current) return;
 
-  const range = sel.getRangeAt(0);
-  if (range.collapsed) return;
+        const newCursor = getCursorFromDOM(editorRef.current);
+        if (!newCursor) return;
 
-  const startCursor = getCursorFromDOMPosition(
-    range.startContainer,
-    range.startOffset,
-    editorRef.current!
-  );
-
-  const endCursor = getCursorFromDOMPosition(
-    range.endContainer,
-    range.endOffset,
-    editorRef.current!
-  );
-
-  if (!startCursor || !endCursor) return;
-
-  const activeMarks = getActiveMarksInSelection(
-    doc,
-    startCursor,
-    endCursor
-  );
-
-  setToolButtons(prev => ({
-    ...prev,
-    ...activeMarks,
-  }));
-};
+        setCursor(newCursor);
+    }
 
     useEffect(()=>{
         const el = editorRef.current;
@@ -399,23 +387,13 @@ export const BlogCanvas = ({editorRef,doc,setDoc,cursor,setCursor,setToolButtons
             
             const sel = window.getSelection();
             if (sel && !sel.isCollapsed){
-                 const range = sel.getRangeAt(0);
-                if (range.collapsed) return;
-
-                const startCursor = getCursorFromDOMPosition(
-                  range.startContainer,
-                  range.startOffset,
-                  editorRef.current!
-                );
-            
-                const endCursor = getCursorFromDOMPosition(
-                  range.endContainer,
-                  range.endOffset,
-                  editorRef.current!
-                );
+                const startCursor = getCursorFromDOM(editorRef.current!);
+                
+                // Temporarily collapse selection to get end
+                sel.collapseToEnd();
+                const endCursor = getCursorFromDOM(editorRef.current!);
                 
                 if (!startCursor || !endCursor) return { doc, cursor };
-                console.log("Range : ",startCursor , endCursor);
                 setDoc(prevDoc =>{
                     const result = deleteSelection(prevDoc,startCursor,endCursor);
                     return result.doc;

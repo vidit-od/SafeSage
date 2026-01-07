@@ -21,7 +21,6 @@ BlogRouter.use(async (c, next) => {
 		try{
 			const token = jwt.split(' ')[1];
 			const payload = await verify(token,c.env.JWT_secret);
-
 			if(!payload || typeof(payload.id) != 'string') return c.json({msg:"invalid token"},400);
 
 			c.set('userId', payload.id);
@@ -45,14 +44,21 @@ BlogRouter.post('/',async(c)=>{
 		if(isGuest) return c.json({msg: "Access denied"},401);
 		const authorId = c.get('userId');
 		const body = await c.req.json();
-		const {success} = createPost.safeParse(body);
+
+		const serializedPost = JSON.stringify(body.doc);
+		const check = {
+			title : body.title,
+			content : serializedPost
+		}
+		const {success} = createPost.safeParse(check);
+		console.log(success);
 		if(!success) return c.json({msg: 'invalid body'},400);
 		
 		// prisma query to create a post 
 		const post = await prisma.post.create({
 			data:{
 				title: body.title,
-				content : body.content,
+				content : serializedPost,
 				authorID: authorId
 			}
 		})

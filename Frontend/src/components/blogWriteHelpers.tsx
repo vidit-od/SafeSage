@@ -79,10 +79,10 @@ export const EFFECT_RENDER_MAP: Record<
   },
   /*color: {
     style: (value) => ({ color: value }),
-  },
+  },*/
   fontSize: {
     style: (value) => ({ fontSize: value }),
-  },*/
+  },
 };
 
 export function renderTextNode(
@@ -97,7 +97,7 @@ export function renderTextNode(
 
   for (const effect in marks) {
     const value = marks[effect as Effect];
-    if (!value) continue;
+    if (value === undefined || value === null || !value) continue;
 
     const renderer = EFFECT_RENDER_MAP[effect as Effect];
     if (!renderer) continue;

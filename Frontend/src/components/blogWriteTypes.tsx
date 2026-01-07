@@ -8,7 +8,7 @@ export type Cursor = {
     offset: number;
 };
 
-export type Marks = Partial<Record<Effect, Boolean>>;
+export type Marks = Partial<ToolButtons>;
 
 export interface TextNode {
   text: string;
@@ -30,26 +30,34 @@ export const EFFECTS = {
   bold: {
     label: "Bold",
     symbol: "B",
+    value : "toggle",
     className: "font-bold",
   },
   italic: {
     label: "Italic",
     symbol: "I",
+    value : "toggle",
     className: "italic",
   },
   underline: {
     label: "Underline",
     symbol: "U",
+    value : "toggle",
     className: "underline",
   },
   strike: {
     label: "Strike",
     symbol: "S",
+    value : "toggle",
     className: "line-through",
   },
+  fontSize:{
+    label : "FontSize",
+    symbol: "F",
+    value : "number",
+    className : "fontsize"
+  }
 } as const;
-
-export type Effect = keyof typeof EFFECTS;
 
 export interface Tool {
     name : String,
@@ -63,7 +71,19 @@ export interface Tools{
 }
 
 
-export type ToolButtons = Record<Effect, boolean>;
+type EffectConfig = typeof EFFECTS;
+
+export type Effect = keyof EffectConfig;
+
+export type EffectValue<E extends Effect> =
+  EffectConfig[E]["value"] extends "toggle"
+    ? boolean
+    : number;
+
+
+export type ToolButtons = {
+  [E in Effect]: EffectValue<E>;
+};
 
 export const myTools = Object.entries(EFFECTS).map(
   ([effect, config]) => ({

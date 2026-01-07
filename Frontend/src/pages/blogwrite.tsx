@@ -8,14 +8,16 @@ import { BlogCanvas } from "../components/blogWriteCanvas";
 import { ToolKit } from "../components/blogWriteToolkit";
 import { ToolButtons,DocumentModle, Cursor,Effect} from "../components/blogWriteTypes"
 import { countLeadingSpaces, countTrailingSpaces, splitAndapplyEffect} from "../components/blogWriteHelpers"
-
+import axios from "axios";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 interface Blog{
     title: string,
     state: boolean,
     setTitle: React.Dispatch<React.SetStateAction<string>>
+    doc: DocumentModle
 }
-const BlogWriteNavbar: React.FC<Blog> = ({title, state, setTitle})=>{
+const BlogWriteNavbar: React.FC<Blog> = ({title, state, setTitle,doc})=>{
     const navigate = useNavigate()
     return(
         <div className="snap-start w-full py-2 px-5 md:px-10 lg:px-20 flex justify-between items-center">
@@ -25,12 +27,12 @@ const BlogWriteNavbar: React.FC<Blog> = ({title, state, setTitle})=>{
 
             <input type="text" value={title} placeholder="Title" onChange={e=>{setTitle(e.target.value)}} className=" outline-none focus:outline-none flex justify-between font-bold text-xl" />
 
-            <NavLinks title ={title} state={state} setTitle={setTitle}/>
+            <NavLinks title ={title} state={state} setTitle={setTitle} doc={doc}/>
         </div>
     )
 }
 
-const NavLinks:React.FC<Blog> = ({state})=>{
+const NavLinks:React.FC<Blog> = ({title, state, doc})=>{
     const user = useRecoilValue(useratom);
     const navigate = useNavigate();
 
@@ -48,7 +50,23 @@ const NavLinks:React.FC<Blog> = ({state})=>{
     },[state]);
 
     const publishblog = async()=>{
-        console.log("Publish attempt")
+        try{
+            if(publishbutton.current) publishbutton.current.disabled = true;
+            if(!doc) throw new Error;
+            const response = await axios.post(
+                `${API}/api/v1/blog`,
+                {title,doc},
+                { 
+                headers:{
+                    Authorization: localStorage.getItem('token')
+                }
+            });
+            console.log(response);
+            navigate("/blog")
+        }
+        catch(e){
+            if(publishbutton.current) publishbutton.current.disabled = false;
+        }
     }
 
     return(
@@ -89,13 +107,12 @@ export function BlogWrite(){
         italic : false,
         underline : false,
         strike : false,
+        fontSize : 16,
     });
 
     
     function applyEffect(effect: Effect, startCursor : Cursor, endCursor: Cursor) {
         if (!editorRef.current) return;
-
-        console.log("Range : ",startCursor , endCursor);
 
         // within block split
         if(startCursor.blockIndex === endCursor.blockIndex && startCursor.childIndex === endCursor.childIndex){
@@ -120,8 +137,13 @@ export function BlogWrite(){
                             return {
                             ...c,
                             marks: {
-                                ...c.marks,
-                                [effect]: !c.marks?.[effect],
+                                ...c.marks,[effect]:
+                                effect === "fontSize"
+                                  ? typeof c.marks?.fontSize === "number"
+                                    ? c.marks.fontSize + 1
+                                    : 16
+                                  : !c.marks?.[effect],
+                                                          
                             },
                         };
                         }),
@@ -200,7 +222,7 @@ export function BlogWrite(){
     }
     return(
         <div className="h-screen flex flex-col bg-[#f9fbf8]">
-            <BlogWriteNavbar title={title} state={(title.length < 5)? false : true} setTitle={setTitle} />
+            <BlogWriteNavbar title={title} state={(title.length < 5)? false : true} setTitle={setTitle} doc={doc} />
             <ToolKit applyEffect = {applyEffect} editorRef={editorRef} Toolbuttons = {ToolButtons} setToolButtons = {setToolButtons}/>
             <BlogCanvas
               editorRef={editorRef}
